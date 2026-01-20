@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Facebook Ads Library Экспортер v3.0</title>
+    <title>Facebook Ads Library Экспортер v4.0</title>
     <style>
         :root {
             --color-primary: #1877f2;
@@ -83,6 +83,11 @@
             color: #65676b;
             font-weight: 400;
             font-size: 12px;
+        }
+
+        label .required {
+            color: var(--color-error);
+            font-weight: 600;
         }
 
         input, select {
@@ -268,6 +273,20 @@
             justify-content: space-between;
         }
 
+        .ad-link {
+            margin-top: 10px;
+        }
+
+        .ad-link a {
+            color: var(--color-primary);
+            text-decoration: none;
+            font-size: 12px;
+        }
+
+        .ad-link a:hover {
+            text-decoration: underline;
+        }
+
         .loading {
             display: none;
             text-align: center;
@@ -342,26 +361,68 @@
             gap: 20px;
         }
 
-        .page-info {
+        .three-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+
+        .search-mode-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid var(--color-border);
+            border-radius: 8px;
             background: white;
-            padding: 12px;
-            border-radius: 4px;
-            border: 1px solid var(--color-primary);
-            margin-top: 10px;
-            font-size: 13px;
-            display: none;
+            cursor: pointer;
+            transition: all 0.2s;
         }
 
-        .page-info.active {
-            display: block;
+        .mode-btn.active {
+            border-color: var(--color-primary);
+            background: #e7f3ff;
         }
 
-        .page-info strong {
+        .mode-btn h4 {
             color: var(--color-primary);
+            margin-bottom: 5px;
+        }
+
+        .mode-btn p {
+            font-size: 12px;
+            color: #65676b;
+        }
+
+        .country-select {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 8px;
+            max-height: 150px;
+            overflow-y: auto;
+            padding: 10px;
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+        }
+
+        .country-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 13px;
+        }
+
+        .country-checkbox input {
+            width: auto;
         }
 
         @media (max-width: 768px) {
-            .two-col {
+            .two-col, .three-col {
                 grid-template-columns: 1fr;
             }
 
@@ -377,67 +438,159 @@
 </head>
 <body>
     <div class="container">
-        <h1>📊 Facebook Ads Library Экспортер <span class="version-badge">v3.0</span></h1>
-        <p class="subtitle">Выгрузка объявлений через Facebook Ads Library API | Теперь с поддержкой URL!</p>
+        <h1>📊 Facebook Ads Library Экспортер <span class="version-badge">v4.0 Fixed</span></h1>
+        <p class="subtitle">Выгрузка объявлений через Facebook Ads Library API | Исправлена работа с permissions</p>
 
         <div id="alerts"></div>
 
-        <div class="form-section">
-            <div class="two-col">
-                <div class="form-group">
-                    <label for="accessToken">Access Token *</label>
-                    <input type="password" id="accessToken" placeholder="Введите ваш Facebook Access Token">
-                    <div class="help-text">
-                        Получить: <a href="https://developers.facebook.com/docs/facebook-login/access-tokens" target="_blank">Facebook Developers</a>
-                    </div>
-                </div>
+        <div class="alert alert-info">
+            <strong>ℹ️ Важно:</strong> Ads Library API требует параметр <code>ad_reached_countries</code>. 
+            Для поиска по Page ID используйте числовой ID (можно найти через lookup-id.com).
+        </div>
 
+        <div class="form-section">
+            <h3 style="margin-bottom: 15px; color: var(--color-primary);">🔑 Авторизация</h3>
+            
+            <div class="form-group">
+                <label for="accessToken">Access Token <span class="required">*</span></label>
+                <input type="password" id="accessToken" placeholder="Введите ваш Facebook Access Token">
+                <div class="help-text">
+                    User Token с permissions: ads_read, ads_management
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3 style="margin-bottom: 15px; color: var(--color-primary);">🔍 Режим поиска</h3>
+            
+            <div class="search-mode-toggle">
+                <button class="mode-btn active" onclick="setSearchMode('page')" id="mode-page">
+                    <h4>📄 По Page ID</h4>
+                    <p>Поиск всех объявлений конкретной страницы</p>
+                </button>
+                <button class="mode-btn" onclick="setSearchMode('keyword')" id="mode-keyword">
+                    <h4>🔤 По ключевым словам</h4>
+                    <p>Поиск объявлений по тексту</p>
+                </button>
+            </div>
+
+            <div id="pageSearchFields">
                 <div class="form-group">
-                    <label for="pageInput">Page URL или Page ID *</label>
-                    <input type="text" id="pageInput" placeholder="https://facebook.com/sierramadregear или 123456789">
-                    <div class="help-text">Можно вставить URL страницы или числовой ID</div>
-                    <div id="pageInfo" class="page-info">
-                        <strong>Найдено:</strong> <span id="pageName"></span><br>
-                        <strong>Page ID:</strong> <span id="pageIdDisplay"></span>
+                    <label for="pageId">Page ID <span class="required">*</span></label>
+                    <input type="text" id="pageId" placeholder="Числовой ID страницы, например: 123456789">
+                    <div class="help-text">
+                        Как найти Page ID: используйте <a href="https://lookup-id.com" target="_blank">lookup-id.com</a> 
+                        или найдите в URL страницы Facebook
                     </div>
                 </div>
             </div>
 
-            <div class="two-col">
+            <div id="keywordSearchFields" style="display: none;">
                 <div class="form-group">
-                    <label for="adAccountId">Ad Account ID <span class="optional">(опционально)</span></label>
-                    <input type="text" id="adAccountId" placeholder="act_1234567890 (необязательно)">
-                    <div class="help-text">Формат: act_XXXXXXXXXX - можно оставить пустым</div>
+                    <label for="searchTerms">Ключевые слова <span class="required">*</span></label>
+                    <input type="text" id="searchTerms" placeholder="Введите ключевые слова для поиска">
+                    <div class="help-text">Поиск по тексту объявлений</div>
                 </div>
+            </div>
+        </div>
 
+        <div class="form-section">
+            <h3 style="margin-bottom: 15px; color: var(--color-primary);">🌍 Страны показа <span class="required">*</span></h3>
+            <p style="font-size: 13px; color: #65676b; margin-bottom: 10px;">Выберите минимум одну страну (обязательный параметр API)</p>
+            
+            <div class="country-select" id="countrySelect">
+                <label class="country-checkbox"><input type="checkbox" value="US" checked> 🇺🇸 US</label>
+                <label class="country-checkbox"><input type="checkbox" value="GB"> 🇬🇧 UK</label>
+                <label class="country-checkbox"><input type="checkbox" value="DE"> 🇩🇪 DE</label>
+                <label class="country-checkbox"><input type="checkbox" value="FR"> 🇫🇷 FR</label>
+                <label class="country-checkbox"><input type="checkbox" value="IT"> 🇮🇹 IT</label>
+                <label class="country-checkbox"><input type="checkbox" value="ES"> 🇪🇸 ES</label>
+                <label class="country-checkbox"><input type="checkbox" value="CA"> 🇨🇦 CA</label>
+                <label class="country-checkbox"><input type="checkbox" value="AU"> 🇦🇺 AU</label>
+                <label class="country-checkbox"><input type="checkbox" value="BR"> 🇧🇷 BR</label>
+                <label class="country-checkbox"><input type="checkbox" value="MX"> 🇲🇽 MX</label>
+                <label class="country-checkbox"><input type="checkbox" value="IN"> 🇮🇳 IN</label>
+                <label class="country-checkbox"><input type="checkbox" value="JP"> 🇯🇵 JP</label>
+                <label class="country-checkbox"><input type="checkbox" value="KR"> 🇰🇷 KR</label>
+                <label class="country-checkbox"><input type="checkbox" value="PL"> 🇵🇱 PL</label>
+                <label class="country-checkbox"><input type="checkbox" value="NL"> 🇳🇱 NL</label>
+                <label class="country-checkbox"><input type="checkbox" value="UA"> 🇺🇦 UA</label>
+                <label class="country-checkbox"><input type="checkbox" value="RU"> 🇷🇺 RU</label>
+                <label class="country-checkbox"><input type="checkbox" value="ALL"> 🌐 ALL</label>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3 style="margin-bottom: 15px; color: var(--color-primary);">⚙️ Дополнительные фильтры</h3>
+            
+            <div class="three-col">
                 <div class="form-group">
                     <label for="adType">Тип объявлений</label>
                     <select id="adType">
-                        <option value="">-- Все типы --</option>
+                        <option value="ALL">Все типы</option>
                         <option value="POLITICAL_AND_ISSUE_ADS">Политические</option>
-                        <option value="HOUSING">Жилое</option>
+                        <option value="HOUSING">Недвижимость</option>
                         <option value="EMPLOYMENT">Трудоустройство</option>
-                        <option value="CREDIT">Кредит</option>
-                        <option value="ALL">Все</option>
+                        <option value="CREDIT">Кредиты</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="adStatus">Статус объявлений</label>
+                    <select id="adStatus">
+                        <option value="">Все статусы</option>
+                        <option value="ACTIVE">Активные</option>
+                        <option value="INACTIVE">Неактивные</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="limit">Лимит результатов</label>
+                    <select id="limit">
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100" selected>100</option>
+                        <option value="250">250</option>
+                        <option value="500">500</option>
                     </select>
                 </div>
             </div>
 
-            <div class="form-group">
-                <label for="searchQuery">Поисковый запрос (опционально)</label>
-                <input type="text" id="searchQuery" placeholder="Ключевые слова для поиска">
-            </div>
+            <div class="two-col">
+                <div class="form-group">
+                    <label for="mediaType">Тип медиа <span class="optional">(опционально)</span></label>
+                    <select id="mediaType">
+                        <option value="">Все типы</option>
+                        <option value="IMAGE">Изображения</option>
+                        <option value="VIDEO">Видео</option>
+                        <option value="MEME">Meme</option>
+                        <option value="NONE">Без медиа</option>
+                    </select>
+                </div>
 
-            <div class="button-group">
-                <button class="btn-primary" onclick="fetchAds()">Получить объявления</button>
-                <button class="btn-secondary" onclick="clearForm()">Очистить</button>
+                <div class="form-group">
+                    <label for="publisherPlatform">Платформа <span class="optional">(опционально)</span></label>
+                    <select id="publisherPlatform">
+                        <option value="">Все платформы</option>
+                        <option value="FACEBOOK">Facebook</option>
+                        <option value="INSTAGRAM">Instagram</option>
+                        <option value="AUDIENCE_NETWORK">Audience Network</option>
+                        <option value="MESSENGER">Messenger</option>
+                    </select>
+                </div>
             </div>
         </div>
 
+        <div class="button-group">
+            <button class="btn-primary" onclick="fetchAds()" id="fetchBtn">🔍 Получить объявления</button>
+            <button class="btn-secondary" onclick="clearForm()">🗑️ Очистить</button>
+            <button class="btn-secondary" onclick="testConnection()">🔌 Тест подключения</button>
+        </div>
+
         <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('preview')">📋 Предпросмотр</button>
-            <button class="tab-btn" onclick="switchTab('script')">💻 Python Скрипт</button>
-            <button class="tab-btn" onclick="switchTab('curl')">🔌 cURL Примеры</button>
+            <button class="tab-btn active" onclick="switchTab('preview')">📋 Результаты</button>
+            <button class="tab-btn" onclick="switchTab('request')">📡 Запрос API</button>
+            <button class="tab-btn" onclick="switchTab('python')">🐍 Python</button>
         </div>
 
         <div id="preview" class="tab-content active">
@@ -446,263 +599,272 @@
 
                 <div class="loading" id="loading">
                     <div class="spinner"></div>
-                    <p>Загрузка объявлений...</p>
+                    <p id="loadingText">Загрузка объявлений...</p>
                 </div>
 
                 <div id="adsContainer" class="ads-list"></div>
 
-                <div style="margin-top: 20px; text-align: center;">
+                <div style="margin-top: 20px; text-align: center;" id="downloadButtons">
                     <button class="btn-download" onclick="downloadCSV()">📥 Скачать CSV</button>
                     <button class="btn-download" onclick="downloadJSON()" style="margin-left: 10px;">📥 Скачать JSON</button>
                 </div>
             </div>
         </div>
 
-        <div id="script" class="tab-content">
+        <div id="request" class="tab-content">
             <div style="background: white; padding: 20px; border-radius: 8px;">
-                <h3 style="margin-bottom: 15px; color: var(--color-primary);">Python Скрипт v3.0</h3>
-                <p style="margin-bottom: 15px; font-size: 14px;">Установите зависимости:</p>
-                <div class="code-block">pip install requests</div>
-
-                <p style="margin-top: 15px; margin-bottom: 10px; font-size: 14px;">Скрипт:</p>
-                <div class="code-block" style="max-height: 600px; overflow-y: auto;">
-import requests
-import json
-import csv
-import re
-from urllib.parse import urlparse
-
-class FacebookAdsLibraryExporter:
-    def __init__(self, access_token):
-        self.access_token = access_token
-        self.api_version = 'v18.0'
-        self.base_url = f'https://graph.facebook.com/{self.api_version}'
-        self.ads = []
-
-    def extract_page_id_from_url(self, page_input):
-        """
-        Извлечь Page ID из URL или вернуть как есть если это уже ID
-
-        Args:
-            page_input: URL страницы или числовой ID
-
-        Returns:
-            Page ID (числовой) или username для дальнейшего запроса
-        """
-        # Если это просто число - вернуть как есть
-        if page_input.isdigit():
-            return page_input
-
-        # Извлечь username из URL
-        patterns = [
-            r'facebook\.com/([^/?]+)',
-            r'fb\.com/([^/?]+)',
-            r'fb\.me/([^/?]+)'
-        ]
-
-        for pattern in patterns:
-            match = re.search(pattern, page_input)
-            if match:
-                username = match.group(1)
-                # Удалить префиксы
-                username = username.replace('pages/', '')
-                return username
-
-        # Если ничего не найдено, вернуть как есть
-        return page_input
-
-    def get_page_id(self, page_input):
-        """
-        Получить числовой Page ID из URL или username
-
-        Args:
-            page_input: URL, username или ID
-
-        Returns:
-            dict с page_id и page_name или None
-        """
-        identifier = self.extract_page_id_from_url(page_input)
-
-        # Если это уже числовой ID, проверим что страница существует
-        url = f'{self.base_url}/{identifier}'
-        params = {
-            'fields': 'id,name',
-            'access_token': self.access_token
-        }
-
-        try:
-            response = requests.get(url, params=params)
-            response.raise_for_status()
-            data = response.json()
-
-            if 'id' in data:
-                print(f"✓ Найдена страница: {data.get('name', 'Unknown')}")
-                print(f"✓ Page ID: {data['id']}")
-                return {
-                    'page_id': data['id'],
-                    'page_name': data.get('name', 'Unknown')
-                }
-            else:
-                print(f"Ошибка: не удалось получить Page ID")
-                return None
-
-        except requests.exceptions.RequestException as e:
-            print(f"Ошибка при получении Page ID: {e}")
-            return None
-
-    def get_ads(self, page_input, ad_type='', search_query='', limit=100):
-        """
-        Получить объявления из Ads Library
-
-        Args:
-            page_input: URL страницы, username или ID
-            ad_type: Тип объявления
-            search_query: Поисковый запрос
-            limit: Количество объявлений на странице
-        """
-        # Сначала получаем Page ID
-        page_data = self.get_page_id(page_input)
-        if not page_data:
-            print("Не удалось получить Page ID. Проверьте URL или ID.")
-            return []
-
-        page_id = page_data['page_id']
-        url = f'{self.base_url}/ads_archive'
-
-        params = {
-            'fields': 'ad_archive_id,ad_creation_time,ad_creative_bodies,ad_delivery_start_time,'
-                     'ad_delivery_stop_time,ad_snapshot_url,impressions,spend,media,targeting,'
-                     'currency,ad_status',
-            'access_token': self.access_token,
-            'search_page_ids': page_id,
-            'ad_type': ad_type if ad_type else 'ALL',
-            'limit': limit,
-        }
-
-        if search_query:
-            params['search_terms'] = search_query
-
-        all_ads = []
-        after = None
-
-        try:
-            while True:
-                if after:
-                    params['after'] = after
-
-                print(f'Загрузка объявлений (страница {len(all_ads)//limit + 1})...')
-                response = requests.get(url, params=params)
-                response.raise_for_status()
-
-                data = response.json()
-
-                if 'error' in data:
-                    print(f"Ошибка API: {data['error']['message']}")
-                    break
-
-                if 'data' in data:
-                    all_ads.extend(data['data'])
-                    print(f'Загружено {len(all_ads)} объявлений')
-
-                if 'paging' in data and 'cursors' in data['paging']:
-                    after = data['paging']['cursors'].get('after')
-                    if not after:
-                        break
-                else:
-                    break
-
-            self.ads = all_ads
-            return all_ads
-
-        except requests.exceptions.RequestException as e:
-            print(f'Ошибка при получении данных: {e}')
-            return []
-
-    def save_to_csv(self, filename='ads_export.csv'):
-        """Сохранить объявления в CSV"""
-        if not self.ads:
-            print('Нет данных для экспорта')
-            return
-
-        with open(filename, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.writer(f)
-            writer.writerow(['ID', 'Текст', 'Дата создания', 'Начало доставки', 
-                           'Конец доставки', 'Статус', 'Impressions', 'Spend', 'Snapshot URL'])
-
-            for ad in self.ads:
-                bodies = ad.get('ad_creative_bodies', [])
-                body_text = bodies[0] if bodies else ''
-
-                writer.writerow([
-                    ad.get('ad_archive_id', ''),
-                    body_text[:200] if body_text else '',
-                    ad.get('ad_creation_time', ''),
-                    ad.get('ad_delivery_start_time', ''),
-                    ad.get('ad_delivery_stop_time', ''),
-                    ad.get('ad_status', ''),
-                    ad.get('impressions', 0),
-                    ad.get('spend', 0),
-                    ad.get('ad_snapshot_url', '')
-                ])
-
-        print(f'Данные сохранены в {filename}')
-
-    def save_to_json(self, filename='ads_export.json'):
-        """Сохранить объявления в JSON"""
-        if not self.ads:
-            print('Нет данных для экспорта')
-            return
-
-        with open(filename, 'w', encoding='utf-8') as f:
-            json.dump(self.ads, f, indent=2, ensure_ascii=False)
-
-        print(f'Данные сохранены в {filename}')
-
-# Использование
-if __name__ == '__main__':
-    ACCESS_TOKEN = 'ВАШ_ACCESS_TOKEN'
-
-    # Можно использовать URL или ID!
-    PAGE_INPUT = 'https://www.facebook.com/sierramadregear/'
-    # или просто: PAGE_INPUT = '123456789'
-
-    exporter = FacebookAdsLibraryExporter(ACCESS_TOKEN)
-
-    # Получить объявления (автоматически конвертирует URL в ID)
-    ads = exporter.get_ads(
-        page_input=PAGE_INPUT,
-        ad_type='ALL',
-        search_query='',
-        limit=100
-    )
-
-    print(f'\nВсего загружено: {len(ads)} объявлений')
-
-    # Экспортировать
-    if ads:
-        exporter.save_to_csv('ads_export.csv')
-        exporter.save_to_json('ads_export.json')
+                <h3 style="margin-bottom: 15px; color: var(--color-primary);">Сформированный запрос</h3>
+                <p style="font-size: 13px; color: #65676b; margin-bottom: 10px;">URL запроса к API (заполните форму выше):</p>
+                <div class="code-block" id="requestUrl" style="word-break: break-all;">
+                    Заполните форму и нажмите "Получить объявления" чтобы увидеть запрос
+                </div>
+                
+                <h4 style="margin-top: 20px; margin-bottom: 10px;">cURL команда:</h4>
+                <div class="code-block" id="curlCommand" style="word-break: break-all;">
+                    curl будет сформирован после заполнения формы
                 </div>
             </div>
         </div>
 
-        <div id="curl" class="tab-content">
+        <div id="python" class="tab-content">
             <div style="background: white; padding: 20px; border-radius: 8px;">
-                <h3 style="margin-bottom: 15px; color: var(--color-primary);">cURL Примеры</h3>
+                <h3 style="margin-bottom: 15px; color: var(--color-primary);">Python Скрипт v4.0</h3>
+                <div class="code-block" style="max-height: 600px; overflow-y: auto; white-space: pre;">
+import requests
+import json
+import csv
+from datetime import datetime
 
-                <h4 style="margin-top: 20px; margin-bottom: 10px;">1. Получить Page ID из username/URL:</h4>
-                <div class="code-block">curl -X GET "https://graph.facebook.com/v18.0/sierramadregear?fields=id,name&access_token=YOUR_ACCESS_TOKEN"</div>
+class FacebookAdsLibraryAPI:
+    """
+    Facebook Ads Library API Client v4.0
+    Исправленная версия с обязательными параметрами
+    """
+    
+    def __init__(self, access_token):
+        self.access_token = access_token
+        self.api_version = 'v21.0'
+        self.base_url = f'https://graph.facebook.com/{self.api_version}'
+        self.ads = []
+    
+    def get_ads_by_page(self, page_id, countries=['US'], ad_type='ALL', 
+                        limit=100, ad_status=None):
+        """
+        Получить объявления по Page ID
+        
+        Args:
+            page_id: Числовой ID страницы Facebook
+            countries: Список кодов стран (обязательно!)
+            ad_type: Тип объявлений
+            limit: Лимит на страницу
+            ad_status: Фильтр по статусу (ACTIVE/INACTIVE)
+        """
+        return self._fetch_ads(
+            search_page_ids=page_id,
+            countries=countries,
+            ad_type=ad_type,
+            limit=limit,
+            ad_status=ad_status
+        )
+    
+    def get_ads_by_keyword(self, search_terms, countries=['US'], 
+                           ad_type='ALL', limit=100, ad_status=None):
+        """
+        Получить объявления по ключевым словам
+        
+        Args:
+            search_terms: Ключевые слова для поиска
+            countries: Список кодов стран (обязательно!)
+            ad_type: Тип объявлений
+            limit: Лимит на страницу
+            ad_status: Фильтр по статусу
+        """
+        return self._fetch_ads(
+            search_terms=search_terms,
+            countries=countries,
+            ad_type=ad_type,
+            limit=limit,
+            ad_status=ad_status
+        )
+    
+    def _fetch_ads(self, search_page_ids=None, search_terms=None,
+                   countries=['US'], ad_type='ALL', limit=100, ad_status=None):
+        """Внутренний метод для запросов к API"""
+        
+        url = f'{self.base_url}/ads_archive'
+        
+        # Базовые параметры (обязательные)
+        params = {
+            'access_token': self.access_token,
+            'ad_reached_countries': json.dumps(countries),  # ОБЯЗАТЕЛЬНО!
+            'ad_type': ad_type,
+            'limit': limit,
+            'fields': ','.join([
+                'id',
+                'ad_archive_id', 
+                'ad_creation_time',
+                'ad_creative_bodies',
+                'ad_creative_link_captions',
+                'ad_creative_link_descriptions',
+                'ad_creative_link_titles',
+                'ad_delivery_start_time',
+                'ad_delivery_stop_time',
+                'ad_snapshot_url',
+                'bylines',
+                'currency',
+                'delivery_by_region',
+                'demographic_distribution',
+                'estimated_audience_size',
+                'impressions',
+                'languages',
+                'page_id',
+                'page_name',
+                'publisher_platforms',
+                'spend',
+                'target_ages',
+                'target_gender',
+                'target_locations'
+            ])
+        }
+        
+        # Условные параметры
+        if search_page_ids:
+            params['search_page_ids'] = search_page_ids
+        
+        if search_terms:
+            params['search_terms'] = search_terms
+        
+        if ad_status:
+            params['ad_active_status'] = ad_status
+        
+        all_ads = []
+        page_count = 0
+        
+        try:
+            while True:
+                page_count += 1
+                print(f'📥 Загрузка страницы {page_count}...')
+                
+                response = requests.get(url, params=params)
+                data = response.json()
+                
+                if 'error' in data:
+                    print(f'❌ Ошибка API: {data["error"]["message"]}')
+                    print(f'   Код: {data["error"].get("code")}')
+                    print(f'   Тип: {data["error"].get("type")}')
+                    break
+                
+                if 'data' in data:
+                    all_ads.extend(data['data'])
+                    print(f'   ✓ Загружено: {len(all_ads)} объявлений')
+                
+                # Пагинация
+                if 'paging' in data and 'next' in data['paging']:
+                    url = data['paging']['next']
+                    params = {}  # URL уже содержит все параметры
+                else:
+                    break
+            
+            self.ads = all_ads
+            print(f'\n✅ Всего загружено: {len(all_ads)} объявлений')
+            return all_ads
+            
+        except Exception as e:
+            print(f'❌ Ошибка: {e}')
+            return []
+    
+    def save_csv(self, filename=None):
+        """Сохранить в CSV"""
+        if not self.ads:
+            print('Нет данных для сохранения')
+            return
+        
+        if not filename:
+            filename = f'fb_ads_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+        
+        with open(filename, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            
+            # Заголовки
+            writer.writerow([
+                'ad_archive_id', 'page_name', 'page_id', 'ad_text',
+                'creation_time', 'start_time', 'stop_time',
+                'impressions_min', 'impressions_max',
+                'spend_min', 'spend_max', 'currency',
+                'platforms', 'snapshot_url'
+            ])
+            
+            for ad in self.ads:
+                bodies = ad.get('ad_creative_bodies', [])
+                text = bodies[0] if bodies else ''
+                
+                imp = ad.get('impressions', {})
+                spend = ad.get('spend', {})
+                platforms = ad.get('publisher_platforms', [])
+                
+                writer.writerow([
+                    ad.get('ad_archive_id', ''),
+                    ad.get('page_name', ''),
+                    ad.get('page_id', ''),
+                    text[:500],
+                    ad.get('ad_creation_time', ''),
+                    ad.get('ad_delivery_start_time', ''),
+                    ad.get('ad_delivery_stop_time', ''),
+                    imp.get('lower_bound', '') if isinstance(imp, dict) else imp,
+                    imp.get('upper_bound', '') if isinstance(imp, dict) else '',
+                    spend.get('lower_bound', '') if isinstance(spend, dict) else spend,
+                    spend.get('upper_bound', '') if isinstance(spend, dict) else '',
+                    ad.get('currency', ''),
+                    ', '.join(platforms) if platforms else '',
+                    ad.get('ad_snapshot_url', '')
+                ])
+        
+        print(f'💾 Сохранено в {filename}')
+    
+    def save_json(self, filename=None):
+        """Сохранить в JSON"""
+        if not self.ads:
+            print('Нет данных для сохранения')
+            return
+        
+        if not filename:
+            filename = f'fb_ads_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json'
+        
+        with open(filename, 'w', encoding='utf-8') as f:
+            json.dump(self.ads, f, indent=2, ensure_ascii=False)
+        
+        print(f'💾 Сохранено в {filename}')
 
-                <h4 style="margin-top: 20px; margin-bottom: 10px;">2. Базовый запрос с Page ID:</h4>
-                <div class="code-block">curl -X GET "https://graph.facebook.com/v18.0/ads_archive?fields=ad_archive_id,ad_creative_bodies,impressions,spend&search_page_ids=PAGE_ID&ad_type=ALL&access_token=YOUR_ACCESS_TOKEN"</div>
 
-                <h4 style="margin-top: 20px; margin-bottom: 10px;">3. С поисковым запросом:</h4>
-                <div class="code-block">curl -X GET "https://graph.facebook.com/v18.0/ads_archive?fields=ad_archive_id,ad_creative_bodies&search_page_ids=PAGE_ID&search_terms=keyword&ad_type=ALL&access_token=YOUR_ACCESS_TOKEN"</div>
-
-                <div class="alert alert-info" style="margin-top: 20px;">
-                    <strong>✨ Новое в v3.0:</strong><br>
-                    Теперь приложение автоматически конвертирует URL страницы в Page ID!<br>
-                    Просто вставьте: <code>https://facebook.com/username</code>
+# ===== ИСПОЛЬЗОВАНИЕ =====
+if __name__ == '__main__':
+    
+    # Ваш Access Token
+    ACCESS_TOKEN = 'YOUR_ACCESS_TOKEN_HERE'
+    
+    # Создаем клиент
+    api = FacebookAdsLibraryAPI(ACCESS_TOKEN)
+    
+    # Вариант 1: Поиск по Page ID
+    ads = api.get_ads_by_page(
+        page_id='123456789',      # Числовой ID страницы
+        countries=['US', 'GB'],    # Страны (обязательно!)
+        ad_type='ALL',
+        limit=100
+    )
+    
+    # Вариант 2: Поиск по ключевым словам  
+    # ads = api.get_ads_by_keyword(
+    #     search_terms='fitness supplements',
+    #     countries=['US'],
+    #     ad_type='ALL',
+    #     limit=100
+    # )
+    
+    # Сохранение
+    if ads:
+        api.save_csv()
+        api.save_json()
                 </div>
             </div>
         </div>
@@ -710,195 +872,281 @@ if __name__ == '__main__':
 
     <script>
         let allAds = [];
-        let currentPageId = null;
+        let searchMode = 'page';
+        let lastRequestUrl = '';
 
-        // Функция для извлечения username из URL
-        function extractPageIdentifier(input) {
-            input = input.trim();
-
-            // Если это просто число - вернуть как есть
-            if (/^\d+$/.test(input)) {
-                return input;
-            }
-
-            // Паттерны для извлечения username
-            const patterns = [
-                /facebook\.com\/([^/?]+)/,
-                /fb\.com\/([^/?]+)/,
-                /fb\.me\/([^/?]+)/
-            ];
-
-            for (let pattern of patterns) {
-                const match = input.match(pattern);
-                if (match) {
-                    let username = match[1];
-                    username = username.replace('pages/', '');
-                    return username;
-                }
-            }
-
-            return input;
+        function setSearchMode(mode) {
+            searchMode = mode;
+            
+            document.getElementById('mode-page').classList.toggle('active', mode === 'page');
+            document.getElementById('mode-keyword').classList.toggle('active', mode === 'keyword');
+            
+            document.getElementById('pageSearchFields').style.display = mode === 'page' ? 'block' : 'none';
+            document.getElementById('keywordSearchFields').style.display = mode === 'keyword' ? 'block' : 'none';
         }
 
-        // Функция для получения Page ID
-        async function getPageId(pageInput, accessToken) {
-            const identifier = extractPageIdentifier(pageInput);
-            const url = `https://graph.facebook.com/v18.0/${identifier}?fields=id,name&access_token=${accessToken}`;
+        function getSelectedCountries() {
+            const checkboxes = document.querySelectorAll('#countrySelect input:checked');
+            return Array.from(checkboxes).map(cb => cb.value);
+        }
 
+        function buildApiUrl() {
+            const accessToken = document.getElementById('accessToken').value;
+            const pageId = document.getElementById('pageId').value;
+            const searchTerms = document.getElementById('searchTerms').value;
+            const countries = getSelectedCountries();
+            const adType = document.getElementById('adType').value;
+            const adStatus = document.getElementById('adStatus').value;
+            const limit = document.getElementById('limit').value;
+            const mediaType = document.getElementById('mediaType').value;
+            const platform = document.getElementById('publisherPlatform').value;
+
+            const url = new URL('https://graph.facebook.com/v21.0/ads_archive');
+            
+            // Обязательные параметры
+            url.searchParams.append('access_token', accessToken || 'YOUR_TOKEN');
+            url.searchParams.append('ad_reached_countries', JSON.stringify(countries));
+            url.searchParams.append('ad_type', adType);
+            url.searchParams.append('limit', limit);
+            
+            // Поля для получения
+            const fields = [
+                'id', 'ad_archive_id', 'ad_creation_time', 'ad_creative_bodies',
+                'ad_creative_link_captions', 'ad_creative_link_descriptions',
+                'ad_creative_link_titles', 'ad_delivery_start_time', 'ad_delivery_stop_time',
+                'ad_snapshot_url', 'bylines', 'currency', 'delivery_by_region',
+                'demographic_distribution', 'estimated_audience_size', 'impressions',
+                'languages', 'page_id', 'page_name', 'publisher_platforms',
+                'spend', 'target_ages', 'target_gender', 'target_locations'
+            ];
+            url.searchParams.append('fields', fields.join(','));
+            
+            // Условные параметры
+            if (searchMode === 'page' && pageId) {
+                url.searchParams.append('search_page_ids', pageId);
+            }
+            
+            if (searchMode === 'keyword' && searchTerms) {
+                url.searchParams.append('search_terms', searchTerms);
+            }
+            
+            if (adStatus) {
+                url.searchParams.append('ad_active_status', adStatus);
+            }
+            
+            if (mediaType) {
+                url.searchParams.append('media_type', mediaType);
+            }
+            
+            if (platform) {
+                url.searchParams.append('publisher_platforms', JSON.stringify([platform]));
+            }
+
+            return url.toString();
+        }
+
+        function updateRequestDisplay() {
+            const url = buildApiUrl();
+            document.getElementById('requestUrl').textContent = url;
+            document.getElementById('curlCommand').textContent = `curl -G "${url.split('?')[0]}" \\\n  --data-urlencode "access_token=YOUR_TOKEN" \\\n  ... (остальные параметры)`;
+        }
+
+        async function testConnection() {
+            const accessToken = document.getElementById('accessToken').value;
+            
+            if (!accessToken) {
+                showAlert('Введите Access Token', 'error');
+                return;
+            }
+
+            showAlert('Тестирование подключения...', 'info');
+            
             try {
-                const response = await fetch(url);
+                const response = await fetch(`https://graph.facebook.com/v21.0/me?access_token=${accessToken}`);
                 const data = await response.json();
-
+                
                 if (data.error) {
-                    throw new Error(data.error.message);
+                    showAlert(`❌ Ошибка токена: ${data.error.message}`, 'error');
+                } else {
+                    showAlert(`✅ Токен валидный! Пользователь: ${data.name || data.id}`, 'success');
                 }
-
-                if (data.id) {
-                    return {
-                        id: data.id,
-                        name: data.name || 'Unknown'
-                    };
-                }
-
-                throw new Error('Page ID не найден');
             } catch (error) {
-                throw error;
+                showAlert(`❌ Ошибка подключения: ${error.message}`, 'error');
             }
         }
 
         async function fetchAds() {
             const accessToken = document.getElementById('accessToken').value;
-            const pageInput = document.getElementById('pageInput').value;
-            const adType = document.getElementById('adType').value;
-            const searchQuery = document.getElementById('searchQuery').value;
+            const pageId = document.getElementById('pageId').value;
+            const searchTerms = document.getElementById('searchTerms').value;
+            const countries = getSelectedCountries();
 
-            if (!accessToken || !pageInput) {
-                showAlert('Пожалуйста, заполните обязательные поля: Access Token и Page URL/ID', 'error');
+            // Валидация
+            if (!accessToken) {
+                showAlert('Введите Access Token', 'error');
                 return;
             }
 
-            showLoading(true);
+            if (countries.length === 0) {
+                showAlert('Выберите минимум одну страну', 'error');
+                return;
+            }
+
+            if (searchMode === 'page' && !pageId) {
+                showAlert('Введите Page ID', 'error');
+                return;
+            }
+
+            if (searchMode === 'keyword' && !searchTerms) {
+                showAlert('Введите ключевые слова для поиска', 'error');
+                return;
+            }
+
+            // Показываем URL запроса
+            lastRequestUrl = buildApiUrl();
+            updateRequestDisplay();
+            
+            showLoading(true, 'Отправка запроса к Ads Library API...');
             clearAlerts();
-            document.getElementById('pageInfo').classList.remove('active');
+            document.getElementById('resultsSection').classList.add('active');
 
             try {
-                // Сначала получаем Page ID
-                showAlert('Получение Page ID...', 'info');
-                const pageData = await getPageId(pageInput, accessToken);
-
-                currentPageId = pageData.id;
-                document.getElementById('pageName').textContent = pageData.name;
-                document.getElementById('pageIdDisplay').textContent = pageData.id;
-                document.getElementById('pageInfo').classList.add('active');
-
-                clearAlerts();
-                showAlert(`Найдена страница: ${pageData.name}`, 'success');
-
-                // Теперь получаем объявления
-                const url = new URL('https://graph.facebook.com/v18.0/ads_archive');
-                url.searchParams.append('fields', 'ad_archive_id,ad_creation_time,ad_creative_bodies,ad_delivery_start_time,ad_delivery_stop_time,impressions,spend,ad_status,media,ad_snapshot_url');
-                url.searchParams.append('search_page_ids', pageData.id);
-                url.searchParams.append('ad_type', adType || 'ALL');
-                url.searchParams.append('access_token', accessToken);
-                url.searchParams.append('limit', '100');
-
-                if (searchQuery) {
-                    url.searchParams.append('search_terms', searchQuery);
-                }
-
-                const response = await fetch(url);
+                const response = await fetch(lastRequestUrl);
                 const data = await response.json();
 
                 if (data.error) {
-                    showAlert(`Ошибка API: ${data.error.message}`, 'error');
+                    let errorMsg = `❌ Ошибка API: ${data.error.message}`;
+                    
+                    // Подсказки по типичным ошибкам
+                    if (data.error.code === 190) {
+                        errorMsg += '\n\n💡 Токен невалидный или истёк. Сгенерируйте новый токен.';
+                    } else if (data.error.code === 10) {
+                        errorMsg += '\n\n💡 Недостаточно прав. Проверьте permissions токена.';
+                    } else if (data.error.message.includes('ad_reached_countries')) {
+                        errorMsg += '\n\n💡 Параметр ad_reached_countries обязателен. Выберите страны.';
+                    }
+                    
+                    showAlert(errorMsg, 'error');
                     showLoading(false);
                     return;
                 }
 
                 allAds = data.data || [];
+                
+                // Пагинация - загружаем все страницы
+                let nextUrl = data.paging?.next;
+                let pageCount = 1;
+                
+                while (nextUrl && pageCount < 10) { // Лимит 10 страниц
+                    pageCount++;
+                    showLoading(true, `Загрузка страницы ${pageCount}...`);
+                    
+                    const nextResponse = await fetch(nextUrl);
+                    const nextData = await nextResponse.json();
+                    
+                    if (nextData.data) {
+                        allAds = allAds.concat(nextData.data);
+                    }
+                    
+                    nextUrl = nextData.paging?.next;
+                }
+
                 displayResults(allAds);
-                showAlert(`Успешно загружено ${allAds.length} объявлений для страницы "${pageData.name}"`, 'success');
+                showAlert(`✅ Загружено ${allAds.length} объявлений`, 'success');
 
             } catch (error) {
-                showAlert(`Ошибка: ${error.message}`, 'error');
+                showAlert(`❌ Ошибка сети: ${error.message}`, 'error');
             } finally {
                 showLoading(false);
             }
         }
 
         function displayResults(ads) {
-            const resultsSection = document.getElementById('resultsSection');
-            resultsSection.classList.add('active');
-
+            // Статистика
             const stats = {
                 total: ads.length,
-                activeAds: ads.filter(a => a.ad_status === 'ACTIVE').length,
+                pages: [...new Set(ads.map(a => a.page_name).filter(Boolean))].length,
+                platforms: [...new Set(ads.flatMap(a => a.publisher_platforms || []))],
                 totalSpend: ads.reduce((sum, a) => {
-                    const spend = a.spend?.lower_bound || a.spend || 0;
+                    const spend = a.spend?.lower_bound || 0;
                     return sum + parseFloat(spend);
-                }, 0),
-                totalImpressions: ads.reduce((sum, a) => {
-                    const impressions = a.impressions?.lower_bound || a.impressions || 0;
-                    return sum + parseInt(impressions);
                 }, 0)
             };
 
             document.getElementById('stats').innerHTML = `
                 <div class="stat-card">
                     <div class="stat-number">${stats.total}</div>
-                    <div class="stat-label">Всего объявлений</div>
+                    <div class="stat-label">Объявлений</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">${stats.activeAds}</div>
-                    <div class="stat-label">Активных</div>
+                    <div class="stat-number">${stats.pages}</div>
+                    <div class="stat-label">Страниц</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">$${stats.totalSpend.toFixed(2)}</div>
-                    <div class="stat-label">Общая трата</div>
+                    <div class="stat-number">${stats.platforms.length}</div>
+                    <div class="stat-label">Платформ</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">${stats.totalImpressions.toLocaleString()}</div>
-                    <div class="stat-label">Impressions</div>
+                    <div class="stat-number">$${stats.totalSpend.toLocaleString()}</div>
+                    <div class="stat-label">Мин. затраты</div>
                 </div>
             `;
 
-            const adsHtml = ads.map(ad => {
-                const creative = ad.ad_creative_bodies?.[0] || 'Текст недоступен';
-                const creativeText = typeof creative === 'string' ? creative : (creative.body || 'Текст недоступен');
+            // Список объявлений
+            const adsHtml = ads.slice(0, 100).map(ad => {
+                const bodies = ad.ad_creative_bodies || [];
+                const text = bodies[0] || 'Текст недоступен';
+                const impressions = ad.impressions || {};
+                const spend = ad.spend || {};
+                const platforms = ad.publisher_platforms || [];
+
                 return `
                     <div class="ad-item">
-                        <div class="ad-title">${creativeText.substring(0, 100)}...</div>
+                        <div class="ad-title">${text.substring(0, 150)}${text.length > 150 ? '...' : ''}</div>
                         <div class="ad-meta">
                             <div class="meta-item">
-                                <span>ID:</span>
-                                <span>${ad.ad_archive_id || 'N/A'}</span>
+                                <span>Страница:</span>
+                                <span>${ad.page_name || 'N/A'}</span>
                             </div>
                             <div class="meta-item">
-                                <span>Статус:</span>
-                                <span>${ad.ad_status || 'N/A'}</span>
+                                <span>Page ID:</span>
+                                <span>${ad.page_id || 'N/A'}</span>
                             </div>
                             <div class="meta-item">
                                 <span>Impressions:</span>
-                                <span>${ad.impressions?.lower_bound || ad.impressions || 0}</span>
+                                <span>${impressions.lower_bound || '?'} - ${impressions.upper_bound || '?'}</span>
                             </div>
                             <div class="meta-item">
                                 <span>Spend:</span>
-                                <span>$${ad.spend?.lower_bound || ad.spend || 0}</span>
+                                <span>${spend.lower_bound || '?'} - ${spend.upper_bound || '?'} ${ad.currency || ''}</span>
                             </div>
                             <div class="meta-item">
-                                <span>Дата создания:</span>
+                                <span>Платформы:</span>
+                                <span>${platforms.join(', ') || 'N/A'}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span>Создано:</span>
                                 <span>${ad.ad_creation_time || 'N/A'}</span>
                             </div>
-                            <div class="meta-item">
-                                <span>Начало доставки:</span>
-                                <span>${ad.ad_delivery_start_time || 'N/A'}</span>
-                            </div>
                         </div>
+                        ${ad.ad_snapshot_url ? `
+                        <div class="ad-link">
+                            <a href="${ad.ad_snapshot_url}" target="_blank">🔗 Посмотреть объявление</a>
+                        </div>
+                        ` : ''}
                     </div>
                 `;
             }).join('');
 
-            document.getElementById('adsContainer').innerHTML = adsHtml || '<p style="padding: 20px; text-align: center; color: #999;">Объявления не найдены</p>';
+            document.getElementById('adsContainer').innerHTML = adsHtml || 
+                '<p style="padding: 20px; text-align: center; color: #999;">Объявления не найдены</p>';
+            
+            if (ads.length > 100) {
+                document.getElementById('adsContainer').innerHTML += 
+                    `<p style="padding: 10px; text-align: center; color: #666; background: #f0f0f0;">
+                        Показано 100 из ${ads.length}. Скачайте CSV/JSON для полного списка.
+                    </p>`;
+            }
         }
 
         function downloadCSV() {
@@ -907,19 +1155,35 @@ if __name__ == '__main__':
                 return;
             }
 
-            const headers = ['ID', 'Текст', 'Статус', 'Impressions', 'Spend', 'Дата создания', 'Начало доставки', 'Snapshot URL'];
+            const headers = [
+                'ad_archive_id', 'page_name', 'page_id', 'ad_text',
+                'creation_time', 'start_time', 'stop_time',
+                'impressions_min', 'impressions_max', 
+                'spend_min', 'spend_max', 'currency',
+                'platforms', 'snapshot_url'
+            ];
+
             const rows = allAds.map(ad => {
-                const creative = ad.ad_creative_bodies?.[0] || '';
-                const creativeText = typeof creative === 'string' ? creative : (creative.body || '');
+                const bodies = ad.ad_creative_bodies || [];
+                const text = (bodies[0] || '').replace(/"/g, '""').replace(/\n/g, ' ');
+                const impressions = ad.impressions || {};
+                const spend = ad.spend || {};
+                const platforms = ad.publisher_platforms || [];
 
                 return [
                     ad.ad_archive_id || '',
-                    creativeText.replace(/"/g, '""'),
-                    ad.ad_status || '',
-                    ad.impressions?.lower_bound || ad.impressions || 0,
-                    ad.spend?.lower_bound || ad.spend || 0,
+                    (ad.page_name || '').replace(/"/g, '""'),
+                    ad.page_id || '',
+                    text.substring(0, 500),
                     ad.ad_creation_time || '',
                     ad.ad_delivery_start_time || '',
+                    ad.ad_delivery_stop_time || '',
+                    impressions.lower_bound || '',
+                    impressions.upper_bound || '',
+                    spend.lower_bound || '',
+                    spend.upper_bound || '',
+                    ad.currency || '',
+                    platforms.join('; '),
                     ad.ad_snapshot_url || ''
                 ];
             });
@@ -928,7 +1192,8 @@ if __name__ == '__main__':
                 row.map(cell => `"${cell}"`).join(',')
             ).join('\n');
 
-            downloadFile(csv, 'ads_export.csv', 'text/csv');
+            downloadFile(csv, `fb_ads_${Date.now()}.csv`, 'text/csv;charset=utf-8');
+            showAlert('✅ CSV файл скачан', 'success');
         }
 
         function downloadJSON() {
@@ -938,11 +1203,13 @@ if __name__ == '__main__':
             }
 
             const json = JSON.stringify(allAds, null, 2);
-            downloadFile(json, 'ads_export.json', 'application/json');
+            downloadFile(json, `fb_ads_${Date.now()}.json`, 'application/json');
+            showAlert('✅ JSON файл скачан', 'success');
         }
 
         function downloadFile(content, filename, type) {
-            const blob = new Blob([content], { type });
+            const BOM = '\uFEFF';
+            const blob = new Blob([BOM + content], { type });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -957,31 +1224,40 @@ if __name__ == '__main__':
             const alertsDiv = document.getElementById('alerts');
             const alertDiv = document.createElement('div');
             alertDiv.className = `alert alert-${type}`;
-            alertDiv.textContent = message;
+            alertDiv.innerHTML = message.replace(/\n/g, '<br>');
             alertsDiv.appendChild(alertDiv);
 
-            setTimeout(() => alertDiv.remove(), 5000);
+            if (type !== 'error') {
+                setTimeout(() => alertDiv.remove(), 5000);
+            }
         }
 
         function clearAlerts() {
             document.getElementById('alerts').innerHTML = '';
         }
 
-        function showLoading(show) {
+        function showLoading(show, text = 'Загрузка...') {
             document.getElementById('loading').classList.toggle('active', show);
+            document.getElementById('loadingText').textContent = text;
+            document.getElementById('fetchBtn').disabled = show;
         }
 
         function clearForm() {
             document.getElementById('accessToken').value = '';
-            document.getElementById('pageInput').value = '';
-            document.getElementById('adAccountId').value = '';
-            document.getElementById('adType').value = '';
-            document.getElementById('searchQuery').value = '';
+            document.getElementById('pageId').value = '';
+            document.getElementById('searchTerms').value = '';
+            document.querySelectorAll('#countrySelect input').forEach(cb => {
+                cb.checked = cb.value === 'US';
+            });
+            document.getElementById('adType').value = 'ALL';
+            document.getElementById('adStatus').value = '';
+            document.getElementById('limit').value = '100';
+            document.getElementById('mediaType').value = '';
+            document.getElementById('publisherPlatform').value = '';
             document.getElementById('resultsSection').classList.remove('active');
-            document.getElementById('pageInfo').classList.remove('active');
             allAds = [];
-            currentPageId = null;
             clearAlerts();
+            setSearchMode('page');
         }
 
         function switchTab(tab) {
@@ -990,7 +1266,16 @@ if __name__ == '__main__':
 
             document.getElementById(tab).classList.add('active');
             event.target.classList.add('active');
+            
+            if (tab === 'request') {
+                updateRequestDisplay();
+            }
         }
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            setSearchMode('page');
+        });
     </script>
 </body>
 </html>
