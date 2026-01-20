@@ -425,7 +425,6 @@
             width: auto;
         }
 
-        /* Lookup Tool Styles */
         .lookup-result {
             margin-top: 15px;
             padding: 15px;
@@ -525,7 +524,6 @@
             padding: 0 15px;
         }
 
-        /* Modal Styles */
         .modal {
             position: fixed;
             top: 0;
@@ -605,19 +603,6 @@
             font-size: 12px;
         }
 
-        .alternative-methods {
-            margin-top: 15px;
-            padding: 12px;
-            background: #fff3cd;
-            border-radius: 6px;
-            font-size: 13px;
-        }
-
-        .alternative-methods a {
-            color: var(--color-primary);
-        }
-
-        /* Export Section Styles */
         .export-checkbox {
             display: flex;
             align-items: center;
@@ -640,35 +625,6 @@
             cursor: pointer;
         }
 
-        .export-checkbox input:checked + span {
-            color: var(--color-primary);
-            font-weight: 600;
-        }
-
-        .btn-download {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-download:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-
-        .btn-download:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
         @media (max-width: 768px) {
             .two-col, .three-col {
                 grid-template-columns: 1fr;
@@ -686,7 +642,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>📊 Facebook Ads Library Экспортер <span class="version-badge">v5.0</span></h1>
+        <h1>📊 Facebook Ads Library Экспортер <span class="version-badge">v5.0 FIXED</span></h1>
         <p class="subtitle">Полная выгрузка объявлений с медиафайлами | Скачивание изображений и видео в ZIP</p>
 
         <div id="alerts"></div>
@@ -726,7 +682,7 @@
                 <div class="form-group">
                     <label for="pageUrl">🔗 URL страницы Facebook</label>
                     <div style="display: flex; gap: 10px;">
-                        <input type="text" id="pageUrl" placeholder="https://www.facebook.com/sierramadregear/" style="flex: 1;">
+                        <input type="text" id="pageUrl" placeholder="https://www.facebook.com/pagename/" style="flex: 1;">
                         <button class="btn-primary" onclick="lookupPageId()" id="lookupBtn" style="white-space: nowrap;">
                             🔍 Найти ID
                         </button>
@@ -766,7 +722,6 @@
                     </div>
                 </div>
 
-                <!-- Модальное окно с инструкцией -->
                 <div id="manualModal" class="modal" style="display: none;">
                     <div class="modal-content">
                         <span class="modal-close" onclick="closeManualModal()">&times;</span>
@@ -790,26 +745,6 @@
                                 <li>Нажмите <kbd>Ctrl+F</kbd> для поиска</li>
                                 <li>Найдите: <code>"pageID"</code> или <code>"page_id"</code> или <code>entity_id</code></li>
                                 <li>Скопируйте числовое значение рядом</li>
-                            </ol>
-                        </div>
-
-                        <div class="instruction-step">
-                            <h4>Способ 3: Через раздел "О странице"</h4>
-                            <ol>
-                                <li>Откройте страницу Facebook</li>
-                                <li>Перейдите в раздел "О странице" (About)</li>
-                                <li>Прокрутите вниз до "Page ID" или "Transparency"</li>
-                                <li>ID может быть указан там</li>
-                            </ol>
-                        </div>
-
-                        <div class="instruction-step">
-                            <h4>Способ 4: Через Facebook Ads Library напрямую</h4>
-                            <ol>
-                                <li>Откройте <a href="https://www.facebook.com/ads/library" target="_blank">Facebook Ads Library</a></li>
-                                <li>Найдите нужную страницу через поиск</li>
-                                <li>В URL будет параметр <code>view_all_page_id=XXXXX</code></li>
-                                <li>Скопируйте это число</li>
                             </ol>
                         </div>
                     </div>
@@ -847,7 +782,7 @@
                 <label class="country-checkbox"><input type="checkbox" value="NL"> 🇳🇱 NL</label>
                 <label class="country-checkbox"><input type="checkbox" value="UA"> 🇺🇦 UA</label>
                 <label class="country-checkbox"><input type="checkbox" value="RU"> 🇷🇺 RU</label>
-                <label class="country-checkbox"><input type="checkbox" value="ALL"> 🌐 ALL</label>
+                <label class="country-checkbox"><input type="checkbox" value="ALL"> 🌍 ALL</label>
             </div>
         </div>
 
@@ -921,7 +856,6 @@
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('preview')">📋 Результаты</button>
             <button class="tab-btn" onclick="switchTab('request')">📡 Запрос API</button>
-            <button class="tab-btn" onclick="switchTab('python')">🐍 Python</button>
         </div>
 
         <div id="preview" class="tab-content active">
@@ -935,64 +869,16 @@
 
                 <div id="adsContainer" class="ads-list"></div>
 
-                <!-- Расширенная секция экспорта -->
                 <div class="export-section" style="margin-top: 25px; padding: 20px; background: white; border-radius: 8px; border: 2px solid var(--color-primary);">
                     <h3 style="margin-bottom: 15px; color: var(--color-primary);">📦 Экспорт данных</h3>
                     
-                    <div class="export-options" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
-                        <label class="export-checkbox">
-                            <input type="checkbox" id="exportText" checked> 
-                            <span>📝 Тексты объявлений</span>
-                        </label>
-                        <label class="export-checkbox">
-                            <input type="checkbox" id="exportMedia" checked> 
-                            <span>🖼️ Медиа ссылки + скрипты</span>
-                        </label>
-                        <label class="export-checkbox">
-                            <input type="checkbox" id="exportStats" checked> 
-                            <span>📊 Статистика (impressions, spend)</span>
-                        </label>
-                        <label class="export-checkbox">
-                            <input type="checkbox" id="exportTargeting" checked> 
-                            <span>🎯 Таргетинг (демография, регионы)</span>
-                        </label>
-                    </div>
-
-                    <!-- Главная кнопка -->
-                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
-                            <div style="color: white;">
-                                <h4 style="margin: 0 0 5px 0;">🚀 Полная выгрузка</h4>
-                                <p style="margin: 0; font-size: 13px; opacity: 0.9;">CSV + JSON + инструменты для скачивания медиа</p>
-                            </div>
-                            <button class="btn-download" onclick="downloadMediaFiles()" style="background: white; color: #667eea; font-size: 16px; padding: 15px 30px;">
-                                📥 Скачать ZIP архив
-                            </button>
-                        </div>
-                    </div>
-
                     <div class="export-buttons" style="display: flex; flex-wrap: wrap; gap: 10px;">
                         <button class="btn-download" onclick="downloadFullCSV()" style="background: #27ae60;">
-                            📥 Только CSV
+                            📥 Скачать CSV
                         </button>
                         <button class="btn-download" onclick="downloadJSON()" style="background: #3498db;">
-                            📥 Только JSON
+                            📥 Скачать JSON
                         </button>
-                        <button class="btn-download" onclick="downloadExcel()" style="background: #e67e22;">
-                            📊 Excel (XLS)
-                        </button>
-                    </div>
-
-                    <!-- Прогресс скачивания медиа -->
-                    <div id="mediaDownloadProgress" style="display: none; margin-top: 20px;">
-                        <div class="progress-header" style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                            <span id="mediaProgressText">Подготовка...</span>
-                            <span id="mediaProgressCount">0 / 0</span>
-                        </div>
-                        <div class="progress-bar" style="height: 24px; background: #e0e0e0; border-radius: 12px; overflow: hidden;">
-                            <div id="mediaProgressBar" style="height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); width: 0%; transition: width 0.3s;"></div>
-                        </div>
-                        <div id="mediaProgressDetails" style="margin-top: 15px; font-size: 13px; color: #666; background: #f8f9fa; padding: 15px; border-radius: 8px;"></div>
                     </div>
                 </div>
             </div>
@@ -1005,254 +891,6 @@
                 <div class="code-block" id="requestUrl" style="word-break: break-all;">
                     Заполните форму и нажмите "Получить объявления" чтобы увидеть запрос
                 </div>
-                
-                <h4 style="margin-top: 20px; margin-bottom: 10px;">cURL команда:</h4>
-                <div class="code-block" id="curlCommand" style="word-break: break-all;">
-                    curl будет сформирован после заполнения формы
-                </div>
-            </div>
-        </div>
-
-        <div id="python" class="tab-content">
-            <div style="background: white; padding: 20px; border-radius: 8px;">
-                <h3 style="margin-bottom: 15px; color: var(--color-primary);">Python Скрипт v4.0</h3>
-                <div class="code-block" style="max-height: 600px; overflow-y: auto; white-space: pre;">
-import requests
-import json
-import csv
-from datetime import datetime
-
-class FacebookAdsLibraryAPI:
-    """
-    Facebook Ads Library API Client v4.0
-    Исправленная версия с обязательными параметрами
-    """
-    
-    def __init__(self, access_token):
-        self.access_token = access_token
-        self.api_version = 'v21.0'
-        self.base_url = f'https://graph.facebook.com/{self.api_version}'
-        self.ads = []
-    
-    def get_ads_by_page(self, page_id, countries=['US'], ad_type='ALL', 
-                        limit=100, ad_status=None):
-        """
-        Получить объявления по Page ID
-        
-        Args:
-            page_id: Числовой ID страницы Facebook
-            countries: Список кодов стран (обязательно!)
-            ad_type: Тип объявлений
-            limit: Лимит на страницу
-            ad_status: Фильтр по статусу (ACTIVE/INACTIVE)
-        """
-        return self._fetch_ads(
-            search_page_ids=page_id,
-            countries=countries,
-            ad_type=ad_type,
-            limit=limit,
-            ad_status=ad_status
-        )
-    
-    def get_ads_by_keyword(self, search_terms, countries=['US'], 
-                           ad_type='ALL', limit=100, ad_status=None):
-        """
-        Получить объявления по ключевым словам
-        
-        Args:
-            search_terms: Ключевые слова для поиска
-            countries: Список кодов стран (обязательно!)
-            ad_type: Тип объявлений
-            limit: Лимит на страницу
-            ad_status: Фильтр по статусу
-        """
-        return self._fetch_ads(
-            search_terms=search_terms,
-            countries=countries,
-            ad_type=ad_type,
-            limit=limit,
-            ad_status=ad_status
-        )
-    
-    def _fetch_ads(self, search_page_ids=None, search_terms=None,
-                   countries=['US'], ad_type='ALL', limit=100, ad_status=None):
-        """Внутренний метод для запросов к API"""
-        
-        url = f'{self.base_url}/ads_archive'
-        
-        # Базовые параметры (обязательные)
-        params = {
-            'access_token': self.access_token,
-            'ad_reached_countries': json.dumps(countries),  # ОБЯЗАТЕЛЬНО!
-            'ad_type': ad_type,
-            'limit': limit,
-            'fields': ','.join([
-                'id',
-                'ad_archive_id', 
-                'ad_creation_time',
-                'ad_creative_bodies',
-                'ad_creative_link_captions',
-                'ad_creative_link_descriptions',
-                'ad_creative_link_titles',
-                'ad_delivery_start_time',
-                'ad_delivery_stop_time',
-                'ad_snapshot_url',
-                'bylines',
-                'currency',
-                'delivery_by_region',
-                'demographic_distribution',
-                'estimated_audience_size',
-                'impressions',
-                'languages',
-                'page_id',
-                'page_name',
-                'publisher_platforms',
-                'spend',
-                'target_ages',
-                'target_gender',
-                'target_locations'
-            ])
-        }
-        
-        # Условные параметры
-        if search_page_ids:
-            params['search_page_ids'] = search_page_ids
-        
-        if search_terms:
-            params['search_terms'] = search_terms
-        
-        if ad_status:
-            params['ad_active_status'] = ad_status
-        
-        all_ads = []
-        page_count = 0
-        
-        try:
-            while True:
-                page_count += 1
-                print(f'📥 Загрузка страницы {page_count}...')
-                
-                response = requests.get(url, params=params)
-                data = response.json()
-                
-                if 'error' in data:
-                    print(f'❌ Ошибка API: {data["error"]["message"]}')
-                    print(f'   Код: {data["error"].get("code")}')
-                    print(f'   Тип: {data["error"].get("type")}')
-                    break
-                
-                if 'data' in data:
-                    all_ads.extend(data['data'])
-                    print(f'   ✓ Загружено: {len(all_ads)} объявлений')
-                
-                # Пагинация
-                if 'paging' in data and 'next' in data['paging']:
-                    url = data['paging']['next']
-                    params = {}  # URL уже содержит все параметры
-                else:
-                    break
-            
-            self.ads = all_ads
-            print(f'\n✅ Всего загружено: {len(all_ads)} объявлений')
-            return all_ads
-            
-        except Exception as e:
-            print(f'❌ Ошибка: {e}')
-            return []
-    
-    def save_csv(self, filename=None):
-        """Сохранить в CSV"""
-        if not self.ads:
-            print('Нет данных для сохранения')
-            return
-        
-        if not filename:
-            filename = f'fb_ads_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
-        
-        with open(filename, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.writer(f)
-            
-            # Заголовки
-            writer.writerow([
-                'ad_archive_id', 'page_name', 'page_id', 'ad_text',
-                'creation_time', 'start_time', 'stop_time',
-                'impressions_min', 'impressions_max',
-                'spend_min', 'spend_max', 'currency',
-                'platforms', 'snapshot_url'
-            ])
-            
-            for ad in self.ads:
-                bodies = ad.get('ad_creative_bodies', [])
-                text = bodies[0] if bodies else ''
-                
-                imp = ad.get('impressions', {})
-                spend = ad.get('spend', {})
-                platforms = ad.get('publisher_platforms', [])
-                
-                writer.writerow([
-                    ad.get('ad_archive_id', ''),
-                    ad.get('page_name', ''),
-                    ad.get('page_id', ''),
-                    text[:500],
-                    ad.get('ad_creation_time', ''),
-                    ad.get('ad_delivery_start_time', ''),
-                    ad.get('ad_delivery_stop_time', ''),
-                    imp.get('lower_bound', '') if isinstance(imp, dict) else imp,
-                    imp.get('upper_bound', '') if isinstance(imp, dict) else '',
-                    spend.get('lower_bound', '') if isinstance(spend, dict) else spend,
-                    spend.get('upper_bound', '') if isinstance(spend, dict) else '',
-                    ad.get('currency', ''),
-                    ', '.join(platforms) if platforms else '',
-                    ad.get('ad_snapshot_url', '')
-                ])
-        
-        print(f'💾 Сохранено в {filename}')
-    
-    def save_json(self, filename=None):
-        """Сохранить в JSON"""
-        if not self.ads:
-            print('Нет данных для сохранения')
-            return
-        
-        if not filename:
-            filename = f'fb_ads_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json'
-        
-        with open(filename, 'w', encoding='utf-8') as f:
-            json.dump(self.ads, f, indent=2, ensure_ascii=False)
-        
-        print(f'💾 Сохранено в {filename}')
-
-
-# ===== ИСПОЛЬЗОВАНИЕ =====
-if __name__ == '__main__':
-    
-    # Ваш Access Token
-    ACCESS_TOKEN = 'YOUR_ACCESS_TOKEN_HERE'
-    
-    # Создаем клиент
-    api = FacebookAdsLibraryAPI(ACCESS_TOKEN)
-    
-    # Вариант 1: Поиск по Page ID
-    ads = api.get_ads_by_page(
-        page_id='123456789',      # Числовой ID страницы
-        countries=['US', 'GB'],    # Страны (обязательно!)
-        ad_type='ALL',
-        limit=100
-    )
-    
-    # Вариант 2: Поиск по ключевым словам  
-    # ads = api.get_ads_by_keyword(
-    #     search_terms='fitness supplements',
-    #     countries=['US'],
-    #     ad_type='ALL',
-    #     limit=100
-    # )
-    
-    # Сохранение
-    if ads:
-        api.save_csv()
-        api.save_json()
-                </div>
             </div>
         </div>
     </div>
@@ -1263,31 +901,25 @@ if __name__ == '__main__':
         let lastRequestUrl = '';
         let foundPageData = null;
 
-        // ===== PAGE ID LOOKUP FUNCTIONS =====
-        
         function extractUsernameFromUrl(url) {
-            // Очищаем URL
             url = url.trim();
             
-            // Если это уже числовой ID - возвращаем как есть
             if (/^\d+$/.test(url)) {
                 return { type: 'id', value: url };
             }
             
-            // Паттерны для извлечения username
             const patterns = [
-                /facebook\.com\/pages\/[^\/]+\/(\d+)/i,  // facebook.com/pages/Name/123456
-                /facebook\.com\/profile\.php\?id=(\d+)/i,  // facebook.com/profile.php?id=123456
-                /facebook\.com\/people\/[^\/]+\/(\d+)/i,  // facebook.com/people/Name/123456
-                /facebook\.com\/([a-zA-Z0-9._-]+)\/?(?:\?|$|#)/i,  // facebook.com/username
-                /fb\.com\/([a-zA-Z0-9._-]+)\/?/i,  // fb.com/username
+                /facebook\.com\/pages\/[^\/]+\/(\d+)/i,
+                /facebook\.com\/profile\.php\?id=(\d+)/i,
+                /facebook\.com\/people\/[^\/]+\/(\d+)/i,
+                /facebook\.com\/([a-zA-Z0-9._-]+)\/?(?:\?|$|#)/i,
+                /fb\.com\/([a-zA-Z0-9._-]+)\/?/i,
             ];
             
             for (let pattern of patterns) {
                 const match = url.match(pattern);
                 if (match) {
                     const value = match[1];
-                    // Проверяем, числовой ли это ID
                     if (/^\d+$/.test(value)) {
                         return { type: 'id', value: value };
                     }
@@ -1295,7 +927,6 @@ if __name__ == '__main__':
                 }
             }
             
-            // Если ничего не найдено, возвращаем как username
             return { type: 'username', value: url };
         }
 
@@ -1308,7 +939,6 @@ if __name__ == '__main__':
                 return;
             }
             
-            // Показываем результат
             const resultDiv = document.getElementById('lookupResult');
             const successDiv = document.getElementById('lookupSuccess');
             const errorDiv = document.getElementById('lookupError');
@@ -1324,7 +954,6 @@ if __name__ == '__main__':
             try {
                 const extracted = extractUsernameFromUrl(pageUrl);
                 
-                // Если извлекли числовой ID напрямую из URL
                 if (extracted.type === 'id') {
                     foundPageData = {
                         id: extracted.value,
@@ -1334,7 +963,6 @@ if __name__ == '__main__':
                     return;
                 }
                 
-                // Пробуем через Graph API (если есть токен)
                 if (accessToken) {
                     try {
                         const graphResult = await lookupViaGraphAPI(extracted.value, accessToken);
@@ -1345,25 +973,9 @@ if __name__ == '__main__':
                         }
                     } catch (e) {
                         console.log('Graph API failed:', e.message);
-                        // Продолжаем к альтернативному методу
                     }
                 }
                 
-                // Пробуем альтернативный метод - через Ads Library
-                if (accessToken) {
-                    try {
-                        const altResult = await lookupViaAlternative(extracted.value);
-                        if (altResult) {
-                            foundPageData = altResult;
-                            showLookupSuccess(foundPageData);
-                            return;
-                        }
-                    } catch (e) {
-                        console.log('Alternative method failed:', e.message);
-                    }
-                }
-                
-                // Если нет токена - подсказываем
                 if (!accessToken) {
                     showLookupError(`
                         <strong>Введите Access Token</strong> для автоматического поиска Page ID.<br><br>
@@ -1373,7 +985,6 @@ if __name__ == '__main__':
                     return;
                 }
                 
-                // Если ничего не сработало - показываем инструкции
                 showLookupError(`
                     Не удалось автоматически получить Page ID для "${extracted.value}".<br><br>
                     <strong>Возможные причины:</strong><br>
@@ -1413,60 +1024,6 @@ if __name__ == '__main__':
             return null;
         }
 
-        async function lookupViaAlternative(identifier) {
-            // Метод: Поиск через Ads Library API по имени страницы
-            // Это работает без специальных permissions!
-            
-            const accessToken = document.getElementById('accessToken').value.trim();
-            if (!accessToken) return null;
-            
-            try {
-                // Ищем страницу по имени через Ads Library
-                const url = new URL('https://graph.facebook.com/v21.0/ads_archive');
-                url.searchParams.append('access_token', accessToken);
-                url.searchParams.append('ad_reached_countries', '["US"]');
-                url.searchParams.append('search_terms', identifier);
-                url.searchParams.append('ad_type', 'ALL');
-                url.searchParams.append('fields', 'page_id,page_name');
-                url.searchParams.append('limit', '10');
-                
-                const response = await fetch(url);
-                const data = await response.json();
-                
-                if (data.data && data.data.length > 0) {
-                    // Ищем точное или близкое совпадение имени
-                    const normalizedSearch = identifier.toLowerCase().replace(/[^a-z0-9]/g, '');
-                    
-                    for (const ad of data.data) {
-                        if (ad.page_name) {
-                            const normalizedName = ad.page_name.toLowerCase().replace(/[^a-z0-9]/g, '');
-                            if (normalizedName.includes(normalizedSearch) || normalizedSearch.includes(normalizedName)) {
-                                return {
-                                    id: ad.page_id,
-                                    name: ad.page_name,
-                                    source: 'Ads Library'
-                                };
-                            }
-                        }
-                    }
-                    
-                    // Если точного совпадения нет, возвращаем первый результат с предупреждением
-                    const first = data.data[0];
-                    if (first.page_id) {
-                        return {
-                            id: first.page_id,
-                            name: first.page_name + ' (возможно не та страница)',
-                            source: 'Ads Library'
-                        };
-                    }
-                }
-            } catch (e) {
-                console.log('Ads Library lookup failed:', e);
-            }
-            
-            return null;
-        }
-
         function showLookupSuccess(data) {
             const successDiv = document.getElementById('lookupSuccess');
             const errorDiv = document.getElementById('lookupError');
@@ -1474,7 +1031,6 @@ if __name__ == '__main__':
             document.getElementById('foundPageName').textContent = data.name;
             document.getElementById('foundPageId').textContent = data.id;
             
-            // Дополнительная информация
             let extra = '';
             if (data.fans) extra += ` • ${data.fans.toLocaleString()} подписчиков`;
             if (data.category) extra += ` • ${data.category}`;
@@ -1502,7 +1058,6 @@ if __name__ == '__main__':
                 document.getElementById('pageId').value = foundPageData.id;
                 showAlert(`✅ Page ID ${foundPageData.id} добавлен в поле поиска`, 'success');
                 
-                // Прокручиваем к полю
                 document.getElementById('pageId').scrollIntoView({ behavior: 'smooth', block: 'center' });
                 document.getElementById('pageId').focus();
             }
@@ -1516,7 +1071,6 @@ if __name__ == '__main__':
             document.getElementById('manualModal').style.display = 'none';
         }
 
-        // Закрытие модала по клику вне его
         document.addEventListener('click', function(e) {
             const modal = document.getElementById('manualModal');
             if (e.target === modal) {
@@ -1524,7 +1078,6 @@ if __name__ == '__main__':
             }
         });
 
-        // Закрытие по Escape
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeManualModal();
@@ -1559,13 +1112,11 @@ if __name__ == '__main__':
 
             const url = new URL('https://graph.facebook.com/v21.0/ads_archive');
             
-            // Обязательные параметры
             url.searchParams.append('access_token', accessToken || 'YOUR_TOKEN');
             url.searchParams.append('ad_reached_countries', JSON.stringify(countries));
             url.searchParams.append('ad_type', adType);
             url.searchParams.append('limit', limit);
             
-            // Поля для получения (включая медиа URLs)
             const fields = [
                 'id', 'ad_archive_id', 'ad_creation_time', 'ad_creative_bodies',
                 'ad_creative_link_captions', 'ad_creative_link_descriptions',
@@ -1577,7 +1128,6 @@ if __name__ == '__main__':
             ];
             url.searchParams.append('fields', fields.join(','));
             
-            // Условные параметры
             if (searchMode === 'page' && pageId) {
                 url.searchParams.append('search_page_ids', pageId);
             }
@@ -1604,7 +1154,6 @@ if __name__ == '__main__':
         function updateRequestDisplay() {
             const url = buildApiUrl();
             document.getElementById('requestUrl').textContent = url;
-            document.getElementById('curlCommand').textContent = `curl -G "${url.split('?')[0]}" \\\n  --data-urlencode "access_token=YOUR_TOKEN" \\\n  ... (остальные параметры)`;
         }
 
         async function testConnection() {
@@ -1637,7 +1186,6 @@ if __name__ == '__main__':
             const searchTerms = document.getElementById('searchTerms').value;
             const countries = getSelectedCountries();
 
-            // Валидация
             if (!accessToken) {
                 showAlert('Введите Access Token', 'error');
                 return;
@@ -1658,7 +1206,6 @@ if __name__ == '__main__':
                 return;
             }
 
-            // Показываем URL запроса
             lastRequestUrl = buildApiUrl();
             updateRequestDisplay();
             
@@ -1673,7 +1220,6 @@ if __name__ == '__main__':
                 if (data.error) {
                     let errorMsg = `❌ Ошибка API: ${data.error.message}`;
                     
-                    // Подсказки по типичным ошибкам
                     if (data.error.code === 190) {
                         errorMsg += '\n\n💡 Токен невалидный или истёк. Сгенерируйте новый токен.';
                     } else if (data.error.code === 10) {
@@ -1689,11 +1235,10 @@ if __name__ == '__main__':
 
                 allAds = data.data || [];
                 
-                // Пагинация - загружаем все страницы
                 let nextUrl = data.paging?.next;
                 let pageCount = 1;
                 
-                while (nextUrl && pageCount < 10) { // Лимит 10 страниц
+                while (nextUrl && pageCount < 10) {
                     pageCount++;
                     showLoading(true, `Загрузка страницы ${pageCount}...`);
                     
@@ -1718,7 +1263,6 @@ if __name__ == '__main__':
         }
 
         function displayResults(ads) {
-            // Статистика
             const stats = {
                 total: ads.length,
                 pages: [...new Set(ads.map(a => a.page_name).filter(Boolean))].length,
@@ -1748,7 +1292,6 @@ if __name__ == '__main__':
                 </div>
             `;
 
-            // Список объявлений
             const adsHtml = ads.slice(0, 100).map(ad => {
                 const bodies = ad.ad_creative_bodies || [];
                 const text = bodies[0] || 'Текст недоступен';
@@ -1805,641 +1348,52 @@ if __name__ == '__main__':
             }
         }
 
-        // ===== ФУНКЦИИ ЭКСПОРТА =====
-
-        function getPagePrefix() {
-            // Получаем префикс из названия страницы для файлов
-            const firstAd = allAds[0];
-            if (firstAd && firstAd.page_name) {
-                return firstAd.page_name.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30);
-            }
-            return 'fb_ads';
-        }
-
-        function sanitizeFilename(name) {
-            return name.replace(/[^a-zA-Z0-9._-]/g, '_').substring(0, 100);
-        }
-
-        function extractMediaFromAd(ad, index) {
-            const media = [];
-            const pagePrefix = getPagePrefix();
-            const adId = ad.ad_archive_id || index;
-            
-            // Извлекаем URL из snapshot_url (основное изображение/видео)
-            if (ad.ad_snapshot_url) {
-                media.push({
-                    type: 'snapshot',
-                    url: ad.ad_snapshot_url,
-                    filename: `${pagePrefix}_${adId}_snapshot.html`,
-                    adId: adId
-                });
-            }
-
-            // Извлекаем медиа из объекта ad (если есть прямые ссылки)
-            // Facebook Ads Library обычно возвращает snapshot_url, но можем попробовать извлечь больше
-            
-            return media;
-        }
-
         function downloadFullCSV() {
             if (allAds.length === 0) {
                 showAlert('Нет данных для скачивания', 'warning');
                 return;
             }
 
-            const pagePrefix = getPagePrefix();
-            const includeText = document.getElementById('exportText').checked;
-            const includeMedia = document.getElementById('exportMedia').checked;
-            const includeStats = document.getElementById('exportStats').checked;
-            const includeTargeting = document.getElementById('exportTargeting').checked;
-
-            // Расширенные заголовки
             const headers = [
-                'ad_archive_id',
-                'page_name', 
-                'page_id',
-                'media_filename',  // Для метчинга с медиафайлами
-                'snapshot_url'
+                'ad_archive_id', 'page_name', 'page_id', 'ad_text',
+                'impressions_min', 'impressions_max', 'spend_min', 'spend_max',
+                'currency', 'creation_time', 'platforms', 'snapshot_url'
             ];
 
-            if (includeText) {
-                headers.push('ad_text', 'link_caption', 'link_description', 'link_title');
-            }
-
-            if (includeStats) {
-                headers.push(
-                    'impressions_min', 'impressions_max',
-                    'spend_min', 'spend_max', 'currency',
-                    'estimated_audience_min', 'estimated_audience_max'
-                );
-            }
-
-            headers.push('creation_time', 'start_time', 'stop_time', 'platforms', 'languages');
-
-            if (includeTargeting) {
-                headers.push(
-                    'target_ages', 'target_gender', 'target_locations',
-                    'demographic_male_13-17', 'demographic_male_18-24', 'demographic_male_25-34',
-                    'demographic_male_35-44', 'demographic_male_45-54', 'demographic_male_55-64', 'demographic_male_65+',
-                    'demographic_female_13-17', 'demographic_female_18-24', 'demographic_female_25-34',
-                    'demographic_female_35-44', 'demographic_female_45-54', 'demographic_female_55-64', 'demographic_female_65+',
-                    'regions_data'
-                );
-            }
-
-            const rows = allAds.map((ad, index) => {
-                const adId = ad.ad_archive_id || index;
+            const rows = allAds.map((ad) => {
                 const bodies = ad.ad_creative_bodies || [];
-                const captions = ad.ad_creative_link_captions || [];
-                const descriptions = ad.ad_creative_link_descriptions || [];
-                const titles = ad.ad_creative_link_titles || [];
-                const impressions = ad.impressions || {};
-                const spend = ad.spend || {};
-                const audience = ad.estimated_audience_size || {};
-                const platforms = ad.publisher_platforms || [];
-                const languages = ad.languages || [];
-                const demographics = ad.demographic_distribution || [];
-                const regions = ad.delivery_by_region || [];
-                const targetAges = ad.target_ages || '';
-                const targetGender = ad.target_gender || '';
-                const targetLocations = ad.target_locations || [];
-
-                // Генерируем имя медиафайла для метчинга
-                const mediaFilename = `${pagePrefix}_${adId}_media`;
-
-                const row = [
-                    adId,
-                    escapeCSV(ad.page_name || ''),
-                    ad.page_id || '',
-                    mediaFilename,
-                    ad.ad_snapshot_url || ''
-                ];
-
-                if (includeText) {
-                    row.push(
-                        escapeCSV((bodies[0] || '').substring(0, 1000)),
-                        escapeCSV(captions[0] || ''),
-                        escapeCSV(descriptions[0] || ''),
-                        escapeCSV(titles[0] || '')
-                    );
-                }
-
-                if (includeStats) {
-                    row.push(
-                        impressions.lower_bound || '',
-                        impressions.upper_bound || '',
-                        spend.lower_bound || '',
-                        spend.upper_bound || '',
-                        ad.currency || '',
-                        audience.lower_bound || '',
-                        audience.upper_bound || ''
-                    );
-                }
-
-                row.push(
-                    ad.ad_creation_time || '',
-                    ad.ad_delivery_start_time || '',
-                    ad.ad_delivery_stop_time || '',
-                    platforms.join('; '),
-                    languages.join('; ')
-                );
-
-                if (includeTargeting) {
-                    // Парсим демографию
-                    const demoData = parseDemographics(demographics);
-                    
-                    row.push(
-                        targetAges,
-                        targetGender,
-                        JSON.stringify(targetLocations),
-                        demoData['male_13-17'] || '',
-                        demoData['male_18-24'] || '',
-                        demoData['male_25-34'] || '',
-                        demoData['male_35-44'] || '',
-                        demoData['male_45-54'] || '',
-                        demoData['male_55-64'] || '',
-                        demoData['male_65+'] || '',
-                        demoData['female_13-17'] || '',
-                        demoData['female_18-24'] || '',
-                        demoData['female_25-34'] || '',
-                        demoData['female_35-44'] || '',
-                        demoData['female_45-54'] || '',
-                        demoData['female_55-64'] || '',
-                        demoData['female_65+'] || '',
-                        JSON.stringify(regions)
-                    );
-                }
-
-                return row;
-            });
-
-            const csv = [headers, ...rows].map(row => 
-                row.map(cell => `"${cell}"`).join(',')
-            ).join('\n');
-
-            const filename = `${pagePrefix}_full_export_${Date.now()}.csv`;
-            downloadFile(csv, filename, 'text/csv;charset=utf-8');
-            showAlert(`✅ Полный CSV экспортирован: ${filename}`, 'success');
-        }
-
-        function escapeCSV(str) {
-            if (typeof str !== 'string') return str;
-            return str.replace(/"/g, '""').replace(/\n/g, ' ').replace(/\r/g, '');
-        }
-
-        function parseDemographics(demographics) {
-            const result = {};
-            if (!Array.isArray(demographics)) return result;
-
-            demographics.forEach(item => {
-                const gender = item.gender || 'unknown';
-                const age = item.age || 'unknown';
-                const percentage = item.percentage || 0;
-                const key = `${gender}_${age}`;
-                result[key] = (percentage * 100).toFixed(2) + '%';
-            });
-
-            return result;
-        }
-
-        async function downloadMediaFiles() {
-            if (allAds.length === 0) {
-                showAlert('Нет данных для скачивания', 'warning');
-                return;
-            }
-
-            const pagePrefix = getPagePrefix();
-            const progressDiv = document.getElementById('mediaDownloadProgress');
-            const progressBar = document.getElementById('mediaProgressBar');
-            const progressText = document.getElementById('mediaProgressText');
-            const progressCount = document.getElementById('mediaProgressCount');
-            const progressDetails = document.getElementById('mediaProgressDetails');
-
-            progressDiv.style.display = 'block';
-            progressText.textContent = 'Сбор ссылок на медиафайлы...';
-            progressBar.style.width = '0%';
-
-            // Собираем все доступные медиа URL из объявлений
-            const mediaItems = [];
-            
-            allAds.forEach((ad, index) => {
-                const adId = ad.ad_archive_id || index;
-                
-                // Snapshot URL (страница с превью)
-                if (ad.ad_snapshot_url) {
-                    mediaItems.push({
-                        url: ad.ad_snapshot_url,
-                        filename: `${pagePrefix}_${adId}_snapshot_link.txt`,
-                        adId: adId,
-                        type: 'snapshot_link',
-                        downloadable: false
-                    });
-                }
-            });
-
-            if (mediaItems.length === 0) {
-                showAlert('Медиафайлы не найдены', 'warning');
-                progressDiv.style.display = 'none';
-                return;
-            }
-
-            progressText.textContent = 'Создание ZIP архива с данными...';
-            progressBar.style.width = '20%';
-
-            try {
-                const zip = new JSZip();
-                const mediaFolder = zip.folder('media');
-                const dataFolder = zip.folder('data');
-
-                // 1. Добавляем CSV с полными данными
-                const csvContent = generateFullCSVContent();
-                dataFolder.file(`${pagePrefix}_ads_data.csv`, csvContent);
-
-                // 2. Добавляем JSON с сырыми данными
-                dataFolder.file(`${pagePrefix}_raw_data.json`, JSON.stringify(allAds, null, 2));
-
-                // 3. Создаем файл с индексом медиа
-                const mediaIndex = generateMediaIndex(pagePrefix);
-                dataFolder.file(`${pagePrefix}_media_index.csv`, mediaIndex.csv);
-                dataFolder.file(`${pagePrefix}_media_urls.txt`, mediaIndex.urls);
-
-                // 4. Создаем HTML файл для удобного просмотра snapshot ссылок
-                const snapshotHtml = generateSnapshotViewerHtml(pagePrefix);
-                mediaFolder.file(`snapshot_viewer.html`, snapshotHtml);
-
-                // 5. Создаем скрипт для массового скачивания
-                const downloadScript = generateDownloadScript(pagePrefix);
-                mediaFolder.file(`download_media.py`, downloadScript.python);
-                mediaFolder.file(`download_media.sh`, downloadScript.bash);
-
-                progressText.textContent = 'Генерация ZIP архива...';
-                progressBar.style.width = '70%';
-
-                // Генерируем ZIP
-                const zipBlob = await zip.generateAsync({
-                    type: 'blob',
-                    compression: 'DEFLATE',
-                    compressionOptions: { level: 6 }
-                }, (metadata) => {
-                    const percent = 70 + (metadata.percent * 0.3);
-                    progressBar.style.width = `${percent}%`;
-                });
-
-                // Скачиваем ZIP
-                const filename = `${pagePrefix}_ads_export_${Date.now()}.zip`;
-                saveAs(zipBlob, filename);
-
-                progressText.textContent = '✅ Скачивание завершено!';
-                progressBar.style.width = '100%';
-                progressCount.textContent = `${allAds.length} объявлений`;
-                
-                progressDetails.innerHTML = `
-                    <strong>✅ ZIP архив скачан: ${filename}</strong><br><br>
-                    <strong>Содержимое архива:</strong><br>
-                    📁 <code>data/</code> - CSV и JSON с данными объявлений<br>
-                    📁 <code>media/</code> - инструменты для скачивания медиа<br><br>
-                    <strong>Для скачивания изображений/видео:</strong><br>
-                    1. Откройте <code>media/snapshot_viewer.html</code> в браузере<br>
-                    2. Или запустите <code>media/download_media.py</code> (требуется Python + Selenium)<br>
-                    3. Или используйте <code>media/download_media.sh</code> с wget
-                `;
-
-                showAlert(`✅ ZIP архив скачан: ${filename}`, 'success');
-
-            } catch (error) {
-                console.error('Error creating ZIP:', error);
-                showAlert(`❌ Ошибка создания архива: ${error.message}`, 'error');
-                progressDiv.style.display = 'none';
-            }
-        }
-
-        function generateFullCSVContent() {
-            const pagePrefix = getPagePrefix();
-            const headers = [
-                'ad_archive_id', 'page_name', 'page_id', 'media_filename',
-                'ad_text', 'link_caption', 'link_description', 'link_title',
-                'impressions_min', 'impressions_max', 'spend_min', 'spend_max', 'currency',
-                'creation_time', 'start_time', 'stop_time', 'platforms', 'languages',
-                'target_ages', 'target_gender', 'snapshot_url'
-            ];
-
-            const rows = allAds.map((ad, index) => {
-                const adId = ad.ad_archive_id || index;
-                const bodies = ad.ad_creative_bodies || [];
-                const captions = ad.ad_creative_link_captions || [];
-                const descriptions = ad.ad_creative_link_descriptions || [];
-                const titles = ad.ad_creative_link_titles || [];
                 const impressions = ad.impressions || {};
                 const spend = ad.spend || {};
                 const platforms = ad.publisher_platforms || [];
-                const languages = ad.languages || [];
-                const mediaFilename = `${pagePrefix}_${adId}`;
 
                 return [
-                    adId,
+                    ad.ad_archive_id || '',
                     escapeCSV(ad.page_name || ''),
                     ad.page_id || '',
-                    mediaFilename,
                     escapeCSV((bodies[0] || '').substring(0, 1000)),
-                    escapeCSV(captions[0] || ''),
-                    escapeCSV(descriptions[0] || ''),
-                    escapeCSV(titles[0] || ''),
                     impressions.lower_bound || '',
                     impressions.upper_bound || '',
                     spend.lower_bound || '',
                     spend.upper_bound || '',
                     ad.currency || '',
                     ad.ad_creation_time || '',
-                    ad.ad_delivery_start_time || '',
-                    ad.ad_delivery_stop_time || '',
                     platforms.join('; '),
-                    languages.join('; '),
-                    ad.target_ages || '',
-                    ad.target_gender || '',
                     ad.ad_snapshot_url || ''
                 ];
             });
 
-            return '\uFEFF' + [headers, ...rows].map(row => 
+            const csv = [headers, ...rows].map(row => 
                 row.map(cell => `"${cell}"`).join(',')
             ).join('\n');
+
+            const filename = `fb_ads_export_${Date.now()}.csv`;
+            downloadFile(csv, filename, 'text/csv;charset=utf-8');
+            showAlert(`✅ CSV экспортирован: ${filename}`, 'success');
         }
 
-        function generateMediaIndex(pagePrefix) {
-            const csvRows = [['ad_archive_id', 'media_filename', 'snapshot_url', 'page_name']];
-            const urlList = [];
-
-            allAds.forEach((ad, index) => {
-                const adId = ad.ad_archive_id || index;
-                const mediaFilename = `${pagePrefix}_${adId}`;
-                
-                csvRows.push([
-                    adId,
-                    mediaFilename,
-                    ad.ad_snapshot_url || '',
-                    ad.page_name || ''
-                ]);
-
-                if (ad.ad_snapshot_url) {
-                    urlList.push(`# Ad ID: ${adId}`);
-                    urlList.push(ad.ad_snapshot_url);
-                    urlList.push('');
-                }
-            });
-
-            return {
-                csv: '\uFEFF' + csvRows.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n'),
-                urls: urlList.join('\n')
-            };
-        }
-
-        function generateSnapshotViewerHtml(pagePrefix) {
-            const adsHtml = allAds.map((ad, index) => {
-                const adId = ad.ad_archive_id || index;
-                const bodies = ad.ad_creative_bodies || [];
-                const text = (bodies[0] || 'Нет текста').substring(0, 200);
-                
-                return `
-                    <div class="ad-card">
-                        <div class="ad-header">
-                            <strong>${ad.page_name || 'Unknown'}</strong>
-                            <span class="ad-id">ID: ${adId}</span>
-                        </div>
-                        <div class="ad-text">${text}${text.length >= 200 ? '...' : ''}</div>
-                        <div class="ad-actions">
-                            <a href="${ad.ad_snapshot_url || '#'}" target="_blank" class="btn">🔗 Открыть Snapshot</a>
-                            <button onclick="copyUrl('${ad.ad_snapshot_url || ''}')" class="btn btn-secondary">📋 Копировать URL</button>
-                        </div>
-                    </div>
-                `;
-            }).join('\n');
-
-            return `<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${pagePrefix} - Snapshot Viewer</title>
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; margin: 0; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        h1 { color: #1877f2; }
-        .stats { background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-        .ad-card { background: white; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .ad-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
-        .ad-id { color: #666; font-size: 12px; }
-        .ad-text { color: #333; margin-bottom: 15px; font-size: 14px; line-height: 1.5; }
-        .ad-actions { display: flex; gap: 10px; }
-        .btn { padding: 8px 16px; border-radius: 4px; text-decoration: none; font-size: 13px; cursor: pointer; border: none; }
-        .btn { background: #1877f2; color: white; }
-        .btn-secondary { background: #e4e6eb; color: #050505; }
-        .btn:hover { opacity: 0.9; }
-        .instructions { background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>📊 ${pagePrefix} - Просмотр объявлений</h1>
-        <div class="stats">
-            <strong>Всего объявлений:</strong> ${allAds.length}
-        </div>
-        <div class="instructions">
-            <strong>💡 Как скачать медиафайлы:</strong><br>
-            1. Нажмите "Открыть Snapshot" для каждого объявления<br>
-            2. На странице Facebook правый клик → "Сохранить изображение как..."<br>
-            3. Или используйте Python скрипт download_media.py для автоматизации
-        </div>
-        <div id="ads">
-            ${adsHtml}
-        </div>
-    </div>
-    <script>
-        function copyUrl(url) {
-            navigator.clipboard.writeText(url);
-            alert('URL скопирован!');
-        }
-    </script>
-</body>
-</html>`;
-        }
-
-        function generateDownloadScript(pagePrefix) {
-            // Python скрипт с Selenium для скачивания медиа
-            const pythonScript = `#!/usr/bin/env python3
-"""
-${pagePrefix} - Facebook Ads Media Downloader
-Скачивает изображения и видео из snapshot страниц
-
-Требования:
-pip install selenium webdriver-manager requests
-
-Использование:
-python download_media.py
-"""
-
-import os
-import time
-import requests
-import csv
-import re
-from urllib.parse import urlparse
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
-
-# Настройки
-OUTPUT_DIR = 'downloaded_media'
-CSV_FILE = '../data/${pagePrefix}_media_index.csv'
-DELAY_BETWEEN_ADS = 2  # секунды
-
-def setup_driver():
-    """Настройка Chrome WebDriver"""
-    options = Options()
-    options.add_argument('--headless')  # Без GUI
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('--window-size=1920,1080')
-    
-    service = Service(ChromeDriverManager().install())
-    return webdriver.Chrome(service=service, options=options)
-
-def download_file(url, filepath):
-    """Скачать файл по URL"""
-    try:
-        response = requests.get(url, stream=True, timeout=30)
-        response.raise_for_status()
-        
-        with open(filepath, 'wb') as f:
-            for chunk in response.iter_content(chunk_size=8192):
-                f.write(chunk)
-        return True
-    except Exception as e:
-        print(f"  ❌ Ошибка скачивания: {e}")
-        return False
-
-def extract_media_from_snapshot(driver, snapshot_url, ad_id, output_dir):
-    """Извлечь и скачать медиа из snapshot страницы"""
-    try:
-        driver.get(snapshot_url)
-        time.sleep(3)  # Ждем загрузки
-        
-        downloaded = []
-        
-        # Ищем изображения
-        images = driver.find_elements(By.TAG_NAME, 'img')
-        for i, img in enumerate(images):
-            src = img.get_attribute('src')
-            if src and 'scontent' in src:  # Facebook CDN
-                ext = '.jpg'
-                if '.png' in src:
-                    ext = '.png'
-                filename = f"{ad_id}_img_{i}{ext}"
-                filepath = os.path.join(output_dir, filename)
-                
-                if download_file(src, filepath):
-                    downloaded.append(filename)
-                    print(f"  ✅ Сохранено: {filename}")
-        
-        # Ищем видео
-        videos = driver.find_elements(By.TAG_NAME, 'video')
-        for i, video in enumerate(videos):
-            src = video.get_attribute('src')
-            if src:
-                filename = f"{ad_id}_video_{i}.mp4"
-                filepath = os.path.join(output_dir, filename)
-                
-                if download_file(src, filepath):
-                    downloaded.append(filename)
-                    print(f"  ✅ Сохранено: {filename}")
-        
-        return downloaded
-        
-    except Exception as e:
-        print(f"  ❌ Ошибка: {e}")
-        return []
-
-def main():
-    # Создаем папку для медиа
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-    
-    # Читаем CSV с индексом
-    ads_to_download = []
-    with open(CSV_FILE, 'r', encoding='utf-8-sig') as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            if row.get('snapshot_url'):
-                ads_to_download.append(row)
-    
-    print(f"📊 Найдено {len(ads_to_download)} объявлений для скачивания")
-    print(f"📁 Медиа будут сохранены в: {OUTPUT_DIR}/")
-    print("-" * 50)
-    
-    # Запускаем браузер
-    driver = setup_driver()
-    
-    try:
-        for i, ad in enumerate(ads_to_download, 1):
-            ad_id = ad.get('ad_archive_id', f'ad_{i}')
-            snapshot_url = ad.get('snapshot_url', '')
-            
-            print(f"\\n[{i}/{len(ads_to_download)}] Обработка: {ad_id}")
-            
-            files = extract_media_from_snapshot(driver, snapshot_url, ad_id, OUTPUT_DIR)
-            
-            if not files:
-                print(f"  ⚠️ Медиа не найдены")
-            
-            time.sleep(DELAY_BETWEEN_ADS)
-            
-    finally:
-        driver.quit()
-    
-    print("\\n" + "=" * 50)
-    print("✅ Скачивание завершено!")
-    print(f"📁 Файлы в папке: {OUTPUT_DIR}/")
-
-if __name__ == '__main__':
-    main()
-`;
-
-            // Bash скрипт для скачивания через wget (snapshot ссылки)
-            const bashScript = `#!/bin/bash
-# ${pagePrefix} - Download snapshot pages
-# Скачивает HTML страницы snapshot для офлайн просмотра
-
-OUTPUT_DIR="snapshots"
-mkdir -p "$OUTPUT_DIR"
-
-echo "📥 Скачивание snapshot страниц..."
-echo ""
-
-# Читаем URL из файла
-while IFS= read -r line; do
-    # Пропускаем комментарии и пустые строки
-    [[ "$line" =~ ^#.*$ ]] && continue
-    [[ -z "$line" ]] && continue
-    
-    # Извлекаем ID из предыдущей строки (комментария)
-    if [[ "$line" =~ ^https:// ]]; then
-        filename=$(echo "$line" | grep -oP 'id=\\K[0-9]+' || echo "snapshot_$(date +%s)")
-        echo "Скачивание: $filename"
-        wget -q -O "$OUTPUT_DIR/$filename.html" "$line" 2>/dev/null || echo "  ⚠️ Ошибка"
-        sleep 1
-    fi
-done < "../data/${pagePrefix}_media_urls.txt"
-
-echo ""
-echo "✅ Готово! Файлы в папке: $OUTPUT_DIR/"
-`;
-
-            return {
-                python: pythonScript,
-                bash: bashScript
-            };
+        function escapeCSV(str) {
+            if (typeof str !== 'string') return str;
+            return str.replace(/"/g, '""').replace(/\n/g, ' ').replace(/\r/g, '');
         }
 
         function downloadJSON() {
@@ -2448,96 +1402,9 @@ echo "✅ Готово! Файлы в папке: $OUTPUT_DIR/"
                 return;
             }
 
-            const pagePrefix = getPagePrefix();
             const json = JSON.stringify(allAds, null, 2);
-            downloadFile(json, `${pagePrefix}_raw_${Date.now()}.json`, 'application/json');
+            downloadFile(json, `fb_ads_raw_${Date.now()}.json`, 'application/json');
             showAlert('✅ JSON файл скачан', 'success');
-        }
-
-        function downloadExcel() {
-            if (allAds.length === 0) {
-                showAlert('Нет данных для скачивания', 'warning');
-                return;
-            }
-
-            // Генерируем XML для Excel (простой формат)
-            const pagePrefix = getPagePrefix();
-            
-            let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
-            xml += '<?mso-application progid="Excel.Sheet"?>\n';
-            xml += '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"\n';
-            xml += '  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">\n';
-            xml += '  <Worksheet ss:Name="Ads">\n';
-            xml += '    <Table>\n';
-
-            // Заголовки
-            const headers = [
-                'ID', 'Page Name', 'Page ID', 'Media Filename', 'Text',
-                'Impressions Min', 'Impressions Max', 'Spend Min', 'Spend Max',
-                'Currency', 'Created', 'Started', 'Ended', 'Platforms', 'Snapshot URL'
-            ];
-
-            xml += '      <Row>\n';
-            headers.forEach(h => {
-                xml += `        <Cell><Data ss:Type="String">${escapeXML(h)}</Data></Cell>\n`;
-            });
-            xml += '      </Row>\n';
-
-            // Данные
-            allAds.forEach((ad, index) => {
-                const adId = ad.ad_archive_id || index;
-                const bodies = ad.ad_creative_bodies || [];
-                const impressions = ad.impressions || {};
-                const spend = ad.spend || {};
-                const platforms = ad.publisher_platforms || [];
-                const mediaFilename = `${pagePrefix}_${adId}_media`;
-
-                xml += '      <Row>\n';
-                const rowData = [
-                    adId,
-                    ad.page_name || '',
-                    ad.page_id || '',
-                    mediaFilename,
-                    (bodies[0] || '').substring(0, 500),
-                    impressions.lower_bound || '',
-                    impressions.upper_bound || '',
-                    spend.lower_bound || '',
-                    spend.upper_bound || '',
-                    ad.currency || '',
-                    ad.ad_creation_time || '',
-                    ad.ad_delivery_start_time || '',
-                    ad.ad_delivery_stop_time || '',
-                    platforms.join('; '),
-                    ad.ad_snapshot_url || ''
-                ];
-
-                rowData.forEach(cell => {
-                    const type = typeof cell === 'number' ? 'Number' : 'String';
-                    xml += `        <Cell><Data ss:Type="${type}">${escapeXML(String(cell))}</Data></Cell>\n`;
-                });
-                xml += '      </Row>\n';
-            });
-
-            xml += '    </Table>\n';
-            xml += '  </Worksheet>\n';
-            xml += '</Workbook>';
-
-            downloadFile(xml, `${pagePrefix}_export_${Date.now()}.xls`, 'application/vnd.ms-excel');
-            showAlert('✅ Excel файл скачан', 'success');
-        }
-
-        function escapeXML(str) {
-            return str
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&apos;');
-        }
-
-        // Оставляем старую функцию для совместимости
-        function downloadCSV() {
-            downloadFullCSV();
         }
 
         function downloadFile(content, filename, type) {
@@ -2605,7 +1472,6 @@ echo "✅ Готово! Файлы в папке: $OUTPUT_DIR/"
             }
         }
 
-        // Инициализация
         document.addEventListener('DOMContentLoaded', () => {
             setSearchMode('page');
         });
