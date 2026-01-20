@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook Ads Library Экспортер</title>
+    <style>
+        :root {
+            --color-primary: #1877f2;
+            --color-error: #e74c3c;
+            --color-success: #27ae60;
+            --color-bg: #f0f2f5;
+            --color-text: #050505;
+            --color-border: #ccc;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: var(--color-bg);
+            color: var(--color-text);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+
+        h1 {
+            color: var(--color-primary);
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #65676b;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid var(--color-primary);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--color-text);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(24, 119, 242, 0.1);
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #65676b;
+            margin-top: 5px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #165dbf;
+            box-shadow: 0 2px 8px rgba(24, 119, 242, 0.3);
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--color-primary);
+            border: 2px solid var(--color-primary);
+        }
+
+        .btn-secondary:hover {
+            background: #f0f2f5;
+        }
+
+        .btn-download {
+            background: var(--color-success);
+            color: white;
+        }
+
+        .btn-download:hover {
+            background: #229954;
+        }
+
+        .btn-download:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .alert-info {
+            background: #e7f3ff;
+            color: #004085;
+            border-left: 4px solid #0066cc;
+        }
+
+        .alert-error {
+            background: #ffe7e7;
+            color: #721c24;
+            border-left: 4px solid var(--color-error);
+        }
+
+        .alert-success {
+            background: #e7ffe7;
+            color: #155724;
+            border-left: 4px solid var(--color-success);
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+
+        .results-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .results-section.active {
+            display: block;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid var(--color-primary);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #65676b;
+            margin-top: 5px;
+        }
+
+        .ads-list {
+            background: white;
+            border-radius: 4px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .ad-item {
+            padding: 15px;
+            border-bottom: 1px solid #e5e5ea;
+            font-size: 13px;
+        }
+
+        .ad-item:last-child {
+            border-bottom: none;
+        }
+
+        .ad-title {
+            font-weight: 600;
+            color: var(--color-primary);
+            margin-bottom: 8px;
+        }
+
+        .ad-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            color: #65676b;
+        }
+
+        .meta-item {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--color-primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .code-block {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 12px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            color: #333;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e5e5ea;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #65676b;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Facebook Ads Library Экспортер</h1>
+        <p class="subtitle">Выгрузка объявлений через Facebook Ads Library API</p>
+
+        <div id="alerts"></div>
+
+        <div class="form-section">
+            <div class="two-col">
+                <div class="form-group">
+                    <label for="accessToken">Access Token *</label>
+                    <input type="password" id="accessToken" placeholder="Введите ваш Facebook Access Token">
+                    <div class="help-text">
+                        Получить: <a href="https://developers.facebook.com/docs/facebook-login/access-tokens" target="_blank">Facebook Developers</a>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="adAccountId">Ad Account ID *</label>
+                    <input type="text" id="adAccountId" placeholder="act_1234567890">
+                    <div class="help-text">Формат: act_XXXXXXXXXX</div>
+                </div>
+            </div>
+
+            <div class="two-col">
+                <div class="form-group">
+                    <label for="pageId">Page ID / Business ID *</label>
+                    <input type="text" id="pageId" placeholder="ID страницы или бизнеса">
+                    <div class="help-text">Числовой идентификатор страницы</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="adType">Тип объявлений</label>
+                    <select id="adType">
+                        <option value="">-- Все типы --</option>
+                        <option value="POLITICAL_AND_ISSUE_ADS">Политические</option>
+                        <option value="HOUSING">Жилое</option>
+                        <option value="EMPLOYMENT">Трудоустройство</option>
+                        <option value="CREDIT">Кредит</option>
+                        <option value="ALL">Все</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="searchQuery">Поисковый запрос (опционально)</label>
+                <input type="text" id="searchQuery" placeholder="Ключевые слова для поиска">
+            </div>
+
+            <div class="button-group">
+                <button class="btn-primary" onclick="fetchAds()">Получить объявления</button>
+                <button class="btn-secondary" onclick="clearForm()">Очистить</button>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('preview')">📋 Предпросмотр</button>
+            <button class="tab-btn" onclick="switchTab('script')">💻 Python Скрипт</button>
+            <button class="tab-btn" onclick="switchTab('curl')">🔌 cURL Примеры</button>
+        </div>
+
+        <div id="preview" class="tab-content active">
+            <div id="resultsSection" class="results-section">
+                <div class="stats" id="stats"></div>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Загрузка объявлений...</p>
+                </div>
+
+                <div id="adsContainer" class="ads-list"></div>
+
+                <div style="margin-top: 20px; text-align: center;">
+                    <button class="btn-download" onclick="downloadCSV()">📥 Скачать CSV</button>
+                    <button class="btn-download" onclick="downloadJSON()" style="margin-left: 10px;">📥 Скачать JSON</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="script" class="tab-content">
+            <div style="background: white; padding: 20px; border-radius: 8px;">
+                <h3 style="margin-bottom: 15px; color: var(--color-primary);">Python Скрипт</h3>
+                <p style="margin-bottom: 15px; font-size: 14px;">Установите зависимости:</p>
+                <div class="code-block">pip install requests pandas</div>
+
+                <p style="margin-top: 15px; margin-bottom: 10px; font-size: 14px;">Скрипт:</p>
+                <div class="code-block" style="max-height: 600px; overflow-y: auto;">
+import requests
+import json
+import csv
+from datetime import datetime
+import time
+
+class FacebookAdsLibraryExporter:
+    def __init__(self, access_token, ad_account_id):
+        self.access_token = access_token
+        self.ad_account_id = ad_account_id
+        self.api_version = 'v18.0'
+        self.base_url = f'https://graph.facebook.com/{self.api_version}'
+        self.ads = []
+
+    def get_ads(self, page_id, ad_type='', search_query='', limit=100):
+        """
+        Получить объявления из Ads Library
+        
+        Args:
+            page_id: ID страницы или бизнеса
+            ad_type: Тип объявления (POLITICAL_AND_ISSUE_ADS, HOUSING, EMPLOYMENT, CREDIT)
+            search_query: Поисковый запрос
+            limit: Количество объявлений на странице (макс 100)
+        """
+        url = f'{self.base_url}/ads_archive'
+        
+        params = {
+            'fields': 'ad_archive_id,ad_creation_time,ad_creative_bodies,ad_delivery_start_time,'
+                     'ad_delivery_stop_time,ad_snapshot_url,impressions,spend,media,targeting,'
+                     'currency,ad_status',
+            'access_token': self.access_token,
+            'search_page_ids': page_id,
+            'ad_type': ad_type if ad_type else 'ALL',
+            'limit': limit,
+        }
+
+        if search_query:
+            params['search_terms'] = search_query
+
+        all_ads = []
+        after = None
+
+        try:
+            while True:
+                if after:
+                    params['after'] = after
+
+                print(f'Загрузка объявлений (after: {after})...')
+                response = requests.get(url, params=params)
+                response.raise_for_status()
+
+                data = response.json()
+
+                if 'data' in data:
+                    all_ads.extend(data['data'])
+                    print(f'Загружено {len(all_ads)} объявлений')
+
+                if 'paging' in data and 'cursors' in data['paging']:
+                    after = data['paging']['cursors'].get('after')
+                    if not after:
+                        break
+                    time.sleep(1)  # Соблюдаем rate limit
+                else:
+                    break
+
+            self.ads = all_ads
+            return all_ads
+
+        except requests.exceptions.RequestException as e:
+            print(f'Ошибка при получении данных: {e}')
+            return []
+
+    def save_to_csv(self, filename='ads_export.csv'):
+        """Сохранить объявления в CSV"""
+        if not self.ads:
+            print('Нет данных для экспорта')
+            return
+
+        with open(filename, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            writer.writerow(['ID', 'Текст', 'Дата создания', 'Начало доставки', 
+                           'Конец доставки', 'Статус', 'Impressions', 'Spend'])
+
+            for ad in self.ads:
+                writer.writerow([
+                    ad.get('ad_archive_id', ''),
+                    ad.get('ad_creative_bodies', [{}])[0].get('body', '')[:100],
+                    ad.get('ad_creation_time', ''),
+                    ad.get('ad_delivery_start_time', ''),
+                    ad.get('ad_delivery_stop_time', ''),
+                    ad.get('ad_status', ''),
+                    ad.get('impressions', 0),
+                    ad.get('spend', 0)
+                ])
+
+        print(f'Данные сохранены в {filename}')
+
+    def save_to_json(self, filename='ads_export.json'):
+        """Сохранить объявления в JSON"""
+        if not self.ads:
+            print('Нет данных для экспорта')
+            return
+
+        with open(filename, 'w', encoding='utf-8') as f:
+            json.dump(self.ads, f, indent=2, ensure_ascii=False)
+
+        print(f'Данные сохранены в {filename}')
+
+# Использование
+if __name__ == '__main__':
+    ACCESS_TOKEN = 'ВАШ_ACCESS_TOKEN'
+    AD_ACCOUNT_ID = 'act_1234567890'
+    PAGE_ID = '123456789'
+
+    exporter = FacebookAdsLibraryExporter(ACCESS_TOKEN, AD_ACCOUNT_ID)
+    
+    # Получить объявления
+    ads = exporter.get_ads(
+        page_id=PAGE_ID,
+        ad_type='POLITICAL_AND_ISSUE_ADS',
+        search_query='',
+        limit=100
+    )
+
+    # Экспортировать
+    exporter.save_to_csv('ads_export.csv')
+    exporter.save_to_json('ads_export.json')
+
+    print(f'Всего загружено: {len(ads)} объявлений')
+                </div>
+            </div>
+        </div>
+
+        <div id="curl" class="tab-content">
+            <div style="background: white; padding: 20px; border-radius: 8px;">
+                <h3 style="margin-bottom: 15px; color: var(--color-primary);">cURL Примеры</h3>
+
+                <h4 style="margin-top: 20px; margin-bottom: 10px;">1. Базовый запрос к Ads Archive:</h4>
+                <div class="code-block">curl -X GET "https://graph.facebook.com/v18.0/ads_archive?fields=ad_archive_id,ad_creative_bodies,impressions,spend&search_page_ids=PAGE_ID&ad_type=ALL&access_token=YOUR_ACCESS_TOKEN"</div>
+
+                <h4 style="margin-top: 20px; margin-bottom: 10px;">2. С поисковым запросом:</h4>
+                <div class="code-block">curl -X GET "https://graph.facebook.com/v18.0/ads_archive?fields=ad_archive_id,ad_creative_bodies&search_page_ids=PAGE_ID&search_terms=keyword&ad_type=ALL&access_token=YOUR_ACCESS_TOKEN"</div>
+
+                <h4 style="margin-top: 20px; margin-bottom: 10px;">3. С пагинацией:</h4>
+                <div class="code-block">curl -X GET "https://graph.facebook.com/v18.0/ads_archive?fields=ad_archive_id,ad_creative_bodies&search_page_ids=PAGE_ID&ad_type=ALL&limit=100&after=CURSOR&access_token=YOUR_ACCESS_TOKEN"</div>
+
+                <h4 style="margin-top: 20px; margin-bottom: 10px;">4. Все доступные поля:</h4>
+                <div class="code-block">
+fields=ad_archive_id,ad_creation_time,ad_creative_bodies,ad_delivery_start_time,ad_delivery_stop_time,ad_snapshot_url,impressions,spend,media,targeting,currency,ad_status
+                </div>
+
+                <h4 style="margin-top: 20px; margin-bottom: 10px;">5. Типы объявлений (ad_type):</h4>
+                <div class="code-block">
+POLITICAL_AND_ISSUE_ADS - Политические
+HOUSING - Жилое
+EMPLOYMENT - Трудоустройство
+CREDIT - Кредит
+ALL - Все типы
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allAds = [];
+
+        async function fetchAds() {
+            const accessToken = document.getElementById('accessToken').value;
+            const pageId = document.getElementById('pageId').value;
+            const adType = document.getElementById('adType').value;
+            const searchQuery = document.getElementById('searchQuery').value;
+
+            if (!accessToken || !pageId) {
+                showAlert('Пожалуйста, заполните обязательные поля', 'error');
+                return;
+            }
+
+            showLoading(true);
+            clearAlerts();
+
+            try {
+                const url = new URL('https://graph.facebook.com/v18.0/ads_archive');
+                url.searchParams.append('fields', 'ad_archive_id,ad_creation_time,ad_creative_bodies,ad_delivery_start_time,ad_delivery_stop_time,impressions,spend,ad_status,media');
+                url.searchParams.append('search_page_ids', pageId);
+                url.searchParams.append('ad_type', adType || 'ALL');
+                url.searchParams.append('access_token', accessToken);
+                url.searchParams.append('limit', '100');
+
+                if (searchQuery) {
+                    url.searchParams.append('search_terms', searchQuery);
+                }
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.error) {
+                    showAlert(`Ошибка API: ${data.error.message}`, 'error');
+                    showLoading(false);
+                    return;
+                }
+
+                allAds = data.data || [];
+                displayResults(allAds);
+                showAlert(`Успешно загружено ${allAds.length} объявлений`, 'success');
+
+            } catch (error) {
+                showAlert(`Ошибка: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function displayResults(ads) {
+            const resultsSection = document.getElementById('resultsSection');
+            resultsSection.classList.add('active');
+
+            // Stats
+            const stats = {
+                total: ads.length,
+                activeAds: ads.filter(a => a.ad_status === 'ACTIVE').length,
+                totalSpend: ads.reduce((sum, a) => sum + (parseFloat(a.spend) || 0), 0),
+                totalImpressions: ads.reduce((sum, a) => sum + (parseInt(a.impressions) || 0), 0)
+            };
+
+            document.getElementById('stats').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${stats.total}</div>
+                    <div class="stat-label">Всего объявлений</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.activeAds}</div>
+                    <div class="stat-label">Активных</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">$${stats.totalSpend.toFixed(2)}</div>
+                    <div class="stat-label">Общая трата</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.totalImpressions.toLocaleString()}</div>
+                    <div class="stat-label">Impressions</div>
+                </div>
+            `;
+
+            // Ads list
+            const adsHtml = ads.map(ad => {
+                const creative = ad.ad_creative_bodies?.[0]?.body || 'Текст недоступен';
+                return `
+                    <div class="ad-item">
+                        <div class="ad-title">${creative.substring(0, 100)}...</div>
+                        <div class="ad-meta">
+                            <div class="meta-item">
+                                <span>ID:</span>
+                                <span>${ad.ad_archive_id || 'N/A'}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span>Статус:</span>
+                                <span>${ad.ad_status || 'N/A'}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span>Impressions:</span>
+                                <span>${ad.impressions || 0}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span>Spend:</span>
+                                <span>$${ad.spend || 0}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span>Дата создания:</span>
+                                <span>${ad.ad_creation_time || 'N/A'}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span>Начало доставки:</span>
+                                <span>${ad.ad_delivery_start_time || 'N/A'}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('adsContainer').innerHTML = adsHtml || '<p style="padding: 20px; text-align: center; color: #999;">Объявления не найдены</p>';
+        }
+
+        function downloadCSV() {
+            if (allAds.length === 0) {
+                showAlert('Нет данных для скачивания', 'warning');
+                return;
+            }
+
+            const headers = ['ID', 'Текст', 'Статус', 'Impressions', 'Spend', 'Дата создания', 'Начало доставки'];
+            const rows = allAds.map(ad => [
+                ad.ad_archive_id || '',
+                (ad.ad_creative_bodies?.[0]?.body || '').replace(/"/g, '""'),
+                ad.ad_status || '',
+                ad.impressions || 0,
+                ad.spend || 0,
+                ad.ad_creation_time || '',
+                ad.ad_delivery_start_time || ''
+            ]);
+
+            const csv = [headers, ...rows].map(row => 
+                row.map(cell => `"${cell}"`).join(',')
+            ).join('\n');
+
+            downloadFile(csv, 'ads_export.csv', 'text/csv');
+        }
+
+        function downloadJSON() {
+            if (allAds.length === 0) {
+                showAlert('Нет данных для скачивания', 'warning');
+                return;
+            }
+
+            const json = JSON.stringify(allAds, null, 2);
+            downloadFile(json, 'ads_export.json', 'application/json');
+        }
+
+        function downloadFile(content, filename, type) {
+            const blob = new Blob([content], { type });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+
+        function showAlert(message, type) {
+            const alertsDiv = document.getElementById('alerts');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            alertsDiv.appendChild(alertDiv);
+
+            setTimeout(() => alertDiv.remove(), 5000);
+        }
+
+        function clearAlerts() {
+            document.getElementById('alerts').innerHTML = '';
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').classList.toggle('active', show);
+        }
+
+        function clearForm() {
+            document.getElementById('accessToken').value = '';
+            document.getElementById('pageId').value = '';
+            document.getElementById('adType').value = '';
+            document.getElementById('searchQuery').value = '';
+            document.getElementById('resultsSection').classList.remove('active');
+            allAds = [];
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(tab).classList.add('active');
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
